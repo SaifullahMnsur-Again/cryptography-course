@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptography Simulations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .cipher-section { display: none; }
+        .cipher-section.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-gray-900 text-white flex flex-col h-full shadow-lg">
+        <div class="p-6 text-2xl font-bold border-b border-gray-700">
+            Crypto Sim
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="showSection('caesar')" class="w-full text-left p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">01. Caesar Cipher</button>
+            <button onclick="showSection('mono')" class="w-full text-left p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">02. Monoalphabetic</button>
+            <button onclick="showSection('rsa')" class="w-full text-left p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">03. RSA Algorithm</button>
+            <button onclick="showSection('playfair')" class="w-full text-left p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">04. Playfair Cipher</button>
+            <button onclick="showSection('hill')" class="w-full text-left p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">05. Hill Cipher</button>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-10 overflow-y-auto">
+        
+        <section id="caesar" class="cipher-section active max-w-3xl mx-auto">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-2">Caesar Cipher</h1>
+            <p class="mb-6 text-gray-600">A substitution cipher that shifts characters by a fixed number of positions.</p>
+            
+            <div class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
+                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Math</h2>
+                <p class="text-sm text-blue-800 mb-2">The cipher replaces each letter in the plaintext with a letter a fixed number of positions down the alphabet.</p>
+                <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1 font-mono">
+                    <li>Encryption: E(x) = (x + shift) mod 26</li>
+                    <li>Decryption: D(x) = (x - shift) mod 26</li>
+                </ul>
+                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/01_ceaser_cipher.cpp" target="_blank" class="inline-flex items-center mt-4 text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                    View C++ Source Code
+                </a>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Plain Text</label>
+                    <input type="text" id="caesar-input" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" value="HELLO WORLD">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Shift (Key)</label>
+                    <input type="number" id="caesar-shift" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" value="3">
+                </div>
+                <div class="flex space-x-4">
+                    <button onclick="runCaesar()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Run Cipher</button>
+                </div>
+                <div class="mt-4 p-4 bg-gray-100 rounded border">
+                    <p><strong>Encrypted:</strong> <span id="caesar-enc" class="text-red-600 font-mono"></span></p>
+                    <p><strong>Decrypted:</strong> <span id="caesar-dec" class="text-green-600 font-mono"></span></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="mono" class="cipher-section max-w-3xl mx-auto">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-2">Monoalphabetic Cipher</h1>
+            <p class="mb-6 text-gray-600">Maps each letter of the alphabet to a fixed, alternative letter.</p>
+            
+            <div class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
+                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Explanation</h2>
+                <p class="text-sm text-blue-800 mb-2">Unlike the Caesar cipher which uses a mathematical shift, this cipher creates a strict 1-to-1 mapping between the standard alphabet and a permuted 26-letter key.</p>
+                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/02_monoalphabetic_cipher.cpp" target="_blank" class="inline-flex items-center mt-2 text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                    View C++ Source Code
+                </a>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Plain Text (Use a long paragraph for better analysis!)</label>
+                    <textarea id="mono-input" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" rows="3">DEFEND THE EAST WALL OF THE CASTLE AT DAWN. THE ENEMY IS APPROACHING FAST AND WE MUST HOLD THE LINE TO ENSURE OUR VICTORY.</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">26-Letter Key</label>
+                    <input type="text" id="mono-key" class="w-full border p-2 rounded uppercase focus:ring-2 focus:ring-blue-500" value="QWERTYUIOPASDFGHJKLZXCVBNM" maxlength="26">
+                </div>
+                <button onclick="runMono()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Encrypt & Decrypt</button>
+                <div class="mt-4 p-4 bg-gray-100 rounded border">
+                    <p><strong>Encrypted:</strong> <span id="mono-enc" class="text-red-600 font-mono"></span></p>
+                    <p><strong>Decrypted:</strong> <span id="mono-dec" class="text-green-600 font-mono"></span></p>
+                </div>
+            </div>
+
+            <div class="bg-purple-50 p-6 rounded-lg shadow-md border border-purple-200">
+                <h3 class="text-xl font-bold text-purple-800 mb-2">Cryptanalysis: Frequency Analysis Attack</h3>
+                <p class="text-sm text-purple-700 mb-4">By counting the most frequent letters in the ciphertext and mapping them to the most frequent letters in the English language (<code class="font-bold">E, T, A, O, I, N...</code>), we can attempt to crack the cipher without the key. <br><br><em>Note: This works best on very long pieces of text!</em></p>
+                
+                <button onclick="runFrequencyAnalysis()" class="bg-purple-600 text-white px-6 py-2 rounded shadow hover:bg-purple-700 mb-4">Run Attack on Ciphertext</button>
+                
+                <div id="mono-attack-results" class="hidden space-y-4">
+                    <div class="p-4 bg-white rounded border border-purple-200">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">Calculated Mapping (Cipher -> Guessed Plaintext):</p>
+                        <p id="mono-freq-map" class="font-mono text-sm tracking-wide text-purple-600 break-all"></p>
+                    </div>
+                    <div class="p-4 bg-white rounded border border-purple-200">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">Cracked Attempt:</p>
+                        <p id="mono-attack-text" class="text-gray-800 font-mono"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="rsa" class="cipher-section max-w-3xl mx-auto">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-2">RSA Algorithm</h1>
+            <p class="mb-6 text-gray-600">Public-key cryptography based on factoring large prime numbers.</p>
+            
+            <div class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
+                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Math</h2>
+                <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
+                    <li><strong>Key Generation:</strong> Generate two primes <i>p</i> and <i>q</i>. Compute the modulus <i>n = p &times; q</i> and the totient <i>&phi;(n) = (p-1)(q-1)</i>.</li>
+                    <li><strong>Public Key (e, n):</strong> Choose an integer <i>e</i> such that 1 &lt; <i>e</i> &lt; <i>&phi;(n)</i> and gcd(<i>e</i>, <i>&phi;(n)</i>) = 1.</li>
+                    <li><strong>Private Key (d, n):</strong> Compute <i>d</i> as the modular multiplicative inverse of <i>e</i> modulo <i>&phi;(n)</i>.</li>
+                    <li class="font-mono mt-2">Encryption: C = M<sup>e</sup> mod n</li>
+                    <li class="font-mono">Decryption: M = C<sup>d</sup> mod n</li>
+                </ul>
+                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/03_rsa_algo.cpp" target="_blank" class="inline-flex items-center mt-4 text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                    View C++ Source Code
+                </a>
+            </div>
+
+            
+
+            <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Message (ASCII Number, e.g., 65 for 'A')</label>
+                    <input type="number" id="rsa-input" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" value="65">
+                </div>
+                <button onclick="runRSA()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Generate Keys & Simulate</button>
+                <div class="mt-4 p-4 bg-gray-100 rounded border space-y-2">
+                    <p><strong>Primes:</strong> p = <span id="rsa-p"></span>, q = <span id="rsa-q"></span></p>
+                    <p><strong>Keys:</strong> Public (e, n) = <span id="rsa-pub" class="font-mono text-blue-600"></span> | Private (d, n) = <span id="rsa-priv" class="font-mono text-purple-600"></span></p>
+                    <p><strong>Encrypted Cipher:</strong> <span id="rsa-enc" class="text-red-600 font-mono"></span></p>
+                    <p><strong>Decrypted Message:</strong> <span id="rsa-dec" class="text-green-600 font-mono"></span></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="playfair" class="cipher-section max-w-3xl mx-auto">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-2">Playfair Cipher</h1>
+            <p class="mb-6 text-gray-600">Encrypts pairs of letters (digraphs) using a 5x5 matrix.</p>
+            
+            <div class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
+                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Math</h2>
+                <p class="text-sm text-blue-800 mb-2">Constructs a 5x5 grid using a key (treating 'J' as 'I'). Plaintext is split into pairs. The encryption follows three geometric rules:</p>
+                <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
+                    <li><strong>Same Row:</strong> Replace each with the letter to its right (wrapping around).</li>
+                    <li><strong>Same Column:</strong> Replace each with the letter below it (wrapping around).</li>
+                    <li><strong>Rectangle:</strong> Form a rectangle with the two letters and swap them with the letters on the opposite horizontal corners.</li>
+                </ul>
+                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/04_playfair_cipher.cpp" target="_blank" class="inline-flex items-center mt-4 text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                    View C++ Source Code
+                </a>
+            </div>
+
+            
+
+            <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Plain Text</label>
+                        <input type="text" id="playfair-input" class="w-full border p-2 rounded uppercase focus:ring-2 focus:ring-blue-500" value="INSTRUMENTS">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Key</label>
+                        <input type="text" id="playfair-key" class="w-full border p-2 rounded uppercase focus:ring-2 focus:ring-blue-500" value="MONARCHY">
+                    </div>
+                </div>
+                <button onclick="runPlayfair()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Run Cipher</button>
+                
+                <div class="mt-4 grid grid-cols-3 gap-4">
+                    <div class="col-span-1 bg-gray-50 p-4 border rounded text-center">
+                        <h3 class="font-bold mb-2 text-sm text-gray-600">Generated Matrix</h3>
+                        <div id="playfair-matrix" class="font-mono text-lg tracking-widest leading-loose"></div>
+                    </div>
+                    <div class="col-span-2 p-4 bg-gray-100 rounded border space-y-2">
+                        <p><strong>Formatted Text:</strong> <span id="playfair-fmt" class="font-mono text-gray-700"></span></p>
+                        <p><strong>Encrypted:</strong> <span id="playfair-enc" class="text-red-600 font-mono"></span></p>
+                        <p><strong>Decrypted:</strong> <span id="playfair-dec" class="text-green-600 font-mono"></span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="hill" class="cipher-section max-w-3xl mx-auto mb-10">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-2">Hill Cipher</h1>
+            <p class="mb-6 text-gray-600">A polyalphabetic substitution cipher based on linear algebra.</p>
+            
+            <div class="mb-6 p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
+                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Math</h2>
+                <p class="text-sm text-blue-800 mb-2">Operates on blocks of text using matrix multiplication. For a 2x2 key matrix K and a plaintext vector P:</p>
+                <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1 font-mono">
+                    <li>Encryption: C = (P &times; K) mod 26</li>
+                    <li>Decryption: P = (C &times; K<sup>-1</sup>) mod 26</li>
+                </ul>
+                <p class="text-sm text-blue-800 mt-2">The key matrix must be invertible modulo 26 (i.e., gcd(det(K), 26) = 1).</p>
+                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/05_hill_cipher.cpp" target="_blank" class="inline-flex items-center mt-4 text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                    View C++ Source Code
+                </a>
+            </div>
+
+            
+
+            <div class="bg-white p-6 rounded-lg shadow-md space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Plain Text</label>
+                    <input type="text" id="hill-input" class="w-full border p-2 rounded uppercase focus:ring-2 focus:ring-blue-500" value="HELP">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold mb-1">2x2 Key Matrix</label>
+                    <div class="grid grid-cols-2 gap-2 w-48">
+                        <input type="number" id="hill-k00" class="border p-2 rounded text-center" value="3">
+                        <input type="number" id="hill-k01" class="border p-2 rounded text-center" value="3">
+                        <input type="number" id="hill-k10" class="border p-2 rounded text-center" value="2">
+                        <input type="number" id="hill-k11" class="border p-2 rounded text-center" value="5">
+                    </div>
+                </div>
+
+                <button onclick="runHill()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Run Cipher</button>
+                <div id="hill-error" class="text-red-600 font-bold hidden bg-red-50 p-3 rounded border border-red-200"></div>
+
+                <div class="mt-4 p-4 bg-gray-100 rounded border space-y-2">
+                    <p><strong>Determinant:</strong> <span id="hill-det"></span></p>
+                    <p><strong>Inverse Matrix mod 26:</strong> <span id="hill-inv" class="font-mono text-purple-600"></span></p>
+                    <p><strong>Encrypted:</strong> <span id="hill-enc" class="text-red-600 font-mono"></span></p>
+                    <p><strong>Decrypted:</strong> <span id="hill-dec" class="text-green-600 font-mono"></span></p>
+                </div>
+            </div>
+
+            <div id="hill-steps-container" class="hidden bg-gray-800 text-green-400 p-6 rounded-lg shadow-md font-mono text-sm overflow-x-auto">
+                <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-600 pb-2">Step-by-Step Calculation</h3>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-gray-300 mb-2 font-bold underline">Encryption Process</h4>
+                        <div id="hill-enc-steps" class="space-y-3 whitespace-nowrap"></div>
+                    </div>
+                    <div>
+                        <h4 class="text-gray-300 mb-2 font-bold underline">Decryption Process</h4>
+                        <div id="hill-dec-steps" class="space-y-3 whitespace-nowrap"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Navigation Logic
+        function showSection(id) {
+            document.querySelectorAll('.cipher-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // Global Modulo Helper (JS % operator handles negative numbers poorly)
+        const mod = (n, m) => ((n % m) + m) % m;
+
+        // --- 01. Caesar Cipher ---
+        function runCaesar() {
+            const text = document.getElementById('caesar-input').value;
+            const shift = parseInt(document.getElementById('caesar-shift').value) || 0;
+            
+            function shiftText(str, s) {
+                let result = "";
+                for (let i = 0; i < str.length; i++) {
+                    let c = str.charCodeAt(i);
+                    if (c >= 65 && c <= 90) result += String.fromCharCode(mod(c - 65 + s, 26) + 65);
+                    else if (c >= 97 && c <= 122) result += String.fromCharCode(mod(c - 97 + s, 26) + 97);
+                    else result += str[i];
+                }
+                return result;
+            }
+
+            const encrypted = shiftText(text, shift);
+            document.getElementById('caesar-enc').innerText = encrypted;
+            document.getElementById('caesar-dec').innerText = shiftText(encrypted, -shift);
+        }
+
+        // --- 02. Monoalphabetic Cipher ---
+        function runMono() {
+            const text = document.getElementById('mono-input').value.toUpperCase();
+            const key = document.getElementById('mono-key').value.toUpperCase();
+            
+            if(key.length !== 26) { alert("Key must be 26 characters!"); return; }
+
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            
+            let encryptMap = {};
+            let decryptMap = {};
+            for(let i = 0; i < 26; i++) {
+                encryptMap[alphabet[i]] = key[i];
+                decryptMap[key[i]] = alphabet[i];
+            }
+
+            let encrypted = text.split('').map(c => encryptMap[c] || c).join('');
+            let decrypted = encrypted.split('').map(c => decryptMap[c] || c).join('');
+
+            document.getElementById('mono-enc').innerText = encrypted;
+            document.getElementById('mono-dec').innerText = decrypted;
+        }
+
+        // --- 02B. Monoalphabetic Frequency Analysis Attack ---
+        function runFrequencyAnalysis() {
+            // Get the ciphertext from the DOM
+            let cipherText = document.getElementById('mono-enc').innerText;
+            if(!cipherText) {
+                alert("Please generate some ciphertext first!");
+                return;
+            }
+
+            const ENGLISH_FREQ = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
+            
+            // 1. Initialize frequency map
+            let freqArray = [];
+            for (let i = 0; i < 26; i++) {
+                freqArray.push({ char: String.fromCharCode(65 + i), count: 0 });
+            }
+
+            // 2. Count frequencies in the cipher text
+            for (let i = 0; i < cipherText.length; i++) {
+                let char = cipherText[i];
+                if (char >= 'A' && char <= 'Z') {
+                    let index = char.charCodeAt(0) - 65;
+                    freqArray[index].count++;
+                }
+            }
+
+            // 3. Sort array descending by count (just like sort(freq.rbegin(), freq.rend()) in C++)
+            freqArray.sort((a, b) => b.count - a.count);
+
+            // 4. Create the attack map
+            let attackMap = {};
+            let displayMap = "";
+            for (let i = 0; i < 26; i++) {
+                attackMap[freqArray[i].char] = ENGLISH_FREQ[i];
+                if(freqArray[i].count > 0) {
+                    displayMap += `${freqArray[i].char}&rarr;${ENGLISH_FREQ[i]} (${freqArray[i].count}) | `;
+                }
+            }
+
+            // 5. Apply the attack map to the text
+            let analysedText = "";
+            for (let i = 0; i < cipherText.length; i++) {
+                let char = cipherText[i];
+                if (char >= 'A' && char <= 'Z') {
+                    analysedText += attackMap[char];
+                } else {
+                    analysedText += char;
+                }
+            }
+
+            // 6. Update the UI
+            document.getElementById('mono-freq-map').innerHTML = displayMap.slice(0, -3); // remove trailing separator
+            document.getElementById('mono-attack-text').innerText = analysedText;
+            document.getElementById('mono-attack-results').classList.remove('hidden');
+        }
+
+        // --- 03. RSA Algorithm ---
+        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+        
+        function powerMod(base, exp, modulus) {
+            let res = 1;
+            base = base % modulus;
+            while (exp > 0) {
+                if (exp % 2 === 1) res = (res * base) % modulus;
+                base = (base * base) % modulus;
+                exp = Math.floor(exp / 2);
+            }
+            return res;
+        }
+
+        function modInverse(e, phi) {
+            let m0 = phi, y = 0, x = 1;
+            if (phi === 1) return 0;
+            while (e > 1) {
+                let q = Math.floor(e / phi);
+                let t = phi;
+                phi = e % phi, e = t;
+                t = y;
+                y = x - q * y;
+                x = t;
+            }
+            if (x < 0) x += m0;
+            return x;
+        }
+
+        function isPrime(num) {
+            if(num <= 1) return false;
+            for(let i = 2; i <= Math.sqrt(num); i++) if(num % i === 0) return false;
+            return true;
+        }
+
+        function genRandPrime(min, max) {
+            let p;
+            do { p = Math.floor(Math.random() * (max - min + 1)) + min; } while (!isPrime(p));
+            return p;
+        }
+
+        function runRSA() {
+            const msg = parseInt(document.getElementById('rsa-input').value);
+            
+            let p = genRandPrime(50, 150);
+            let q = genRandPrime(50, 150);
+            while(p === q) q = genRandPrime(50, 150);
+
+            let n = p * q;
+            let phi = (p - 1) * (q - 1);
+            
+            let e = 17; 
+            while(e < phi) {
+                if(gcd(e, phi) === 1) break;
+                e++;
+            }
+            
+            let d = modInverse(e, phi);
+
+            document.getElementById('rsa-p').innerText = p;
+            document.getElementById('rsa-q').innerText = q;
+            document.getElementById('rsa-pub').innerText = `(${e}, ${n})`;
+            document.getElementById('rsa-priv').innerText = `(${d}, ${n})`;
+
+            let c = powerMod(msg, e, n);
+            document.getElementById('rsa-enc').innerText = c;
+
+            let decrypted = powerMod(c, d, n);
+            document.getElementById('rsa-dec').innerText = `${decrypted} (char: ${String.fromCharCode(decrypted)})`;
+        }
+
+        // --- 04. Playfair Cipher ---
+        function runPlayfair() {
+            let key = document.getElementById('playfair-key').value.toUpperCase().replace(/[^A-Z]/g, '');
+            let text = document.getElementById('playfair-input').value.toUpperCase().replace(/[^A-Z]/g, '');
+            
+            let matrixStr = "";
+            let alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"; // No J
+            key = key.replace(/J/g, 'I');
+            
+            let combined = key + alphabet;
+            for(let char of combined) {
+                if(!matrixStr.includes(char)) {
+                    matrixStr += char;
+                }
+            }
+
+            let matrixHTML = "";
+            for(let i=0; i<25; i++) {
+                matrixHTML += matrixStr[i] + " ";
+                if((i+1) % 5 === 0) matrixHTML += "<br>";
+            }
+            document.getElementById('playfair-matrix').innerHTML = matrixHTML;
+
+            text = text.replace(/J/g, 'I');
+            let formatted = "";
+            for(let i=0; i<text.length; i++) {
+                formatted += text[i];
+                if(i + 1 < text.length && text[i] === text[i+1]) {
+                    formatted += 'X'; 
+                }
+            }
+            if(formatted.length % 2 !== 0) formatted += 'X'; 
+            
+            document.getElementById('playfair-fmt').innerText = formatted;
+
+            function processPlayfair(input, isEncrypt) {
+                let result = "";
+                let shift = isEncrypt ? 1 : 4; 
+                
+                for(let i=0; i<input.length; i+=2) {
+                    let a = input[i];
+                    let b = input[i+1];
+                    let idxA = matrixStr.indexOf(a);
+                    let idxB = matrixStr.indexOf(b);
+                    
+                    let rA = Math.floor(idxA / 5), cA = idxA % 5;
+                    let rB = Math.floor(idxB / 5), cB = idxB % 5;
+
+                    if(rA === rB) {
+                        result += matrixStr[rA * 5 + (cA + shift) % 5];
+                        result += matrixStr[rB * 5 + (cB + shift) % 5];
+                    } else if(cA === cB) {
+                        result += matrixStr[((rA + shift) % 5) * 5 + cA];
+                        result += matrixStr[((rB + shift) % 5) * 5 + cB];
+                    } else {
+                        result += matrixStr[rA * 5 + cB];
+                        result += matrixStr[rB * 5 + cA];
+                    }
+                }
+                return result;
+            }
+
+            let encrypted = processPlayfair(formatted, true);
+            document.getElementById('playfair-enc').innerText = encrypted;
+            document.getElementById('playfair-dec').innerText = processPlayfair(encrypted, false);
+        }
+
+        // --- 05. Hill Cipher ---
+        function runHill() {
+            let text = document.getElementById('hill-input').value.toUpperCase().replace(/[^A-Z]/g, '');
+            let k00 = parseInt(document.getElementById('hill-k00').value);
+            let k01 = parseInt(document.getElementById('hill-k01').value);
+            let k10 = parseInt(document.getElementById('hill-k10').value);
+            let k11 = parseInt(document.getElementById('hill-k11').value);
+            let errorDiv = document.getElementById('hill-error');
+            let stepsContainer = document.getElementById('hill-steps-container');
+
+            // 1. Math: Determinant
+            let det = mod((k00 * k11 - k01 * k10), 26);
+            document.getElementById('hill-det').innerText = det;
+
+            // 2. Math: Modular Inverse of Determinant
+            let detInv = -1;
+            for(let x=1; x<26; x++) {
+                if(mod(det * x, 26) === 1) { detInv = x; break; }
+            }
+
+            if(detInv === -1) {
+                errorDiv.innerText = `Error: Matrix is not invertible mod 26. Determinant is ${det}, which shares a common factor with 26. Try a different key.`;
+                errorDiv.style.display = 'block';
+                stepsContainer.classList.add('hidden');
+                return;
+            } else {
+                errorDiv.style.display = 'none';
+                stepsContainer.classList.remove('hidden');
+            }
+
+            // 3. Math: Adjugate and Inverse Matrix mod 26
+            let inv00 = mod(k11 * detInv, 26);
+            let inv01 = mod(-k01 * detInv, 26);
+            let inv10 = mod(-k10 * detInv, 26);
+            let inv11 = mod(k00 * detInv, 26);
+
+            document.getElementById('hill-inv').innerText = `[[${inv00}, ${inv01}], [${inv10}, ${inv11}]]`;
+
+            // Format text (pad with X to make even length)
+            if(text.length % 2 !== 0) text += 'X';
+
+            // 4. Matrix Multiplication Function with Step Tracking
+            function multiplyMatrixWithSteps(input, m00, m01, m10, m11, stepsElementId) {
+                let result = "";
+                let stepsHTML = "";
+                
+                for(let i=0; i<input.length; i+=2) {
+                    let char0 = input[i];
+                    let char1 = input[i+1];
+                    let v0 = input.charCodeAt(i) - 65;
+                    let v1 = input.charCodeAt(i+1) - 65;
+
+                    let raw0 = (m00 * v0 + m10 * v1); // Standard matrix multiplication row * col
+                    let raw1 = (m01 * v0 + m11 * v1);
+                    
+                    let c0 = mod(raw0, 26);
+                    let c1 = mod(raw1, 26);
+
+                    let outChar0 = String.fromCharCode(c0 + 65);
+                    let outChar1 = String.fromCharCode(c1 + 65);
+
+                    // Build visual step output
+                    stepsHTML += `
+                        <div class="border-l-2 border-green-600 pl-2">
+                            <span class="text-gray-400">Block: [${char0}(${v0}), ${char1}(${v1})]</span><br>
+                            Top: (${m00}*${v0}) + (${m10}*${v1}) = ${raw0} &equiv; <strong class="text-white">${c0} (${outChar0})</strong><br>
+                            Bot: (${m01}*${v0}) + (${m11}*${v1}) = ${raw1} &equiv; <strong class="text-white">${c1} (${outChar1})</strong><br>
+                            <span class="text-purple-300">Result: ${outChar0}${outChar1}</span>
+                        </div>
+                    `;
+
+                    result += outChar0 + outChar1;
+                }
+                
+                document.getElementById(stepsElementId).innerHTML = stepsHTML;
+                return result;
+            }
+
+            // Execute Encryption
+            let encrypted = multiplyMatrixWithSteps(text, k00, k01, k10, k11, 'hill-enc-steps');
+            document.getElementById('hill-enc').innerText = encrypted;
+            
+            // Execute Decryption using the Inverse Matrix
+            let decrypted = multiplyMatrixWithSteps(encrypted, inv00, inv01, inv10, inv11, 'hill-dec-steps');
+            document.getElementById('hill-dec').innerText = decrypted;
+        }
+
+        // --- Initialize all on load ---
+        window.onload = () => {
+            runCaesar();
+            runMono();
+            runRSA();
+            runPlayfair();
+            runHill();
+        };
+    </script>
+</body>
+</html>
