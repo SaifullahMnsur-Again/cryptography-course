@@ -15,6 +15,8 @@ string xor_block_op(string block, string key) {
 }
 
 string encryptSingleBlock(string block, string key) {
+    // can use any other encryption/decryption technique
+    // for simplicity I am using xor block operation
     return xor_block_op(block, key);
 }
 
@@ -77,8 +79,11 @@ string decryptCFB(string ciphertext, string key, string iv, int s_bytes) {
 
 void printHex(string data) {
     for(int i = 0; i < data.length(); i++) {
-        if(i > 0 && i % BLOCK_SIZE == 0)
-            cout << "| ";
+        if(i % BLOCK_SIZE == 0) {
+            cout << endl; // Break from the previous block
+            cout << "Block " << (i / BLOCK_SIZE) + 1 << ": "; 
+        }
+
         // hex = hexadecimal format
         // setw(2) = word width 2
         // setfill('0') = if generated word is less than 2 then fill with 0s from left
@@ -86,7 +91,7 @@ void printHex(string data) {
         // it prints the hexa decimal value of the charect
         cout << hex << setw(2) << setfill('0') << (int)(unsigned char)data[i] << " ";
     }
-    cout << dec << endl;
+    cout << dec << endl; // Switch back to decimal mode
 }
 
 int main() {
