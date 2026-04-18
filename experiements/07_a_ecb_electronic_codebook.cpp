@@ -56,7 +56,12 @@ string decryptECB(string ciphertext, string key) {
 void printHex(string data) {
     for(int i = 0; i < data.length(); i++) {
         if(i > 0 && i % BLOCK_SIZE == 0)
-            cout << " | ";
+            cout << "| ";
+        // hex = hexadecimal format
+        // setw(2) = word width 2
+        // setfill('0') = if generated word is less than 2 then fill with 0s from left
+        // (int)(unsigned char)data[i] = convert the charecter to unsigned charecter and then the integer ascii
+        // it prints the hexa decimal value of the charect
         cout << hex << setw(2) << setfill('0') << (int)(unsigned char)data[i] << " ";
     }
     cout << dec << endl;
