@@ -31,13 +31,21 @@ string xor_block_op(string block, string key) {
     return xor_block;
 }
 
+string encryptSingleBlock(string block, string key) {
+    return xor_block_op(block, key);
+}
+
+string decryptSingleBlock(string block, string key) {
+    return xor_block_op(block, key);
+}
+
 string encryptECB(string plaintext, string key) {
     plaintext = pad(plaintext);
 
     string ciphertext = "";
     for(int i = 0; i < plaintext.length(); i += BLOCK_SIZE) {
         string block = plaintext.substr(i, BLOCK_SIZE);
-        ciphertext += xor_block_op(block, key);
+        ciphertext += encryptSingleBlock(block, key);
     }
     return ciphertext;
 }
@@ -47,7 +55,7 @@ string decryptECB(string ciphertext, string key) {
 
     for(int i = 0; i < ciphertext.length(); i += BLOCK_SIZE) {
         string block = ciphertext.substr(i, BLOCK_SIZE);
-        deciphertext += xor_block_op(block, key);
+        deciphertext += decryptSingleBlock(block, key);
     }
 
     return unpad(deciphertext);

@@ -31,6 +31,14 @@ string xor_block_op(string block, string key) {
     return xor_block;
 }
 
+string encryptSingleBlock(string block, string key) {
+    return xor_block_op(block, key);
+}
+
+string decryptSingleBlock(string block, string key) {
+    return xor_block_op(block, key);
+}
+
 string encryptCBC(string plaintext, string key, string iv) {
     plaintext = pad(plaintext);
 
@@ -44,7 +52,7 @@ string encryptCBC(string plaintext, string key, string iv) {
         string chained_block = xor_block_op(current_plaintext_block, prev_block);
 
         // encrypt
-        string cipher_block = xor_block_op(chained_block, key);
+        string cipher_block = encryptSingleBlock(chained_block, key);
 
         ciphertext += cipher_block;
 
@@ -62,7 +70,7 @@ string decryptCBC(string ciphertext, string key, string iv) {
         string current_ciphertext_block = ciphertext.substr(i, BLOCK_SIZE);
 
         // decrypt
-        string decipher_block = xor_block_op(current_ciphertext_block, key);
+        string decipher_block = decryptSingleBlock(current_ciphertext_block, key);
         
         // unchain
         string unchained_block = xor_block_op(decipher_block, prev_block);
