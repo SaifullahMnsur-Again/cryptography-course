@@ -1,593 +1,1685 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cryptography Simulations</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .cipher-section { display: none; }
-        .cipher-section.active { display: block; }
-        
-        /* Hide scrollbar for mobile horizontal nav */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 text-gray-800 font-sans flex flex-col md:flex-row h-screen overflow-hidden w-full">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cryptography Experiments Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --bg-soft: #edf1ff;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #4d5c78;
+      --accent: #0f4cde;
+      --accent-2: #00a884;
+      --danger: #c84b31;
+      --line: #d5def3;
+      --shadow: 0 18px 40px rgba(15, 76, 222, 0.08);
+      --radius: 16px;
+    }
 
-    <aside class="w-full md:w-64 bg-gray-900 text-white flex flex-col shadow-lg shrink-0 z-10">
-        <div class="p-4 md:p-6 text-xl md:text-2xl font-bold border-b border-gray-700 shrink-0">
-            Crypto Sim
-        </div>
-        <nav class="flex md:flex-col p-3 md:p-4 gap-2 overflow-x-auto no-scrollbar">
-            <button onclick="showSection('caesar')" class="w-max md:w-full whitespace-nowrap text-left px-4 py-2 md:p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">01. Caesar Cipher</button>
-            <button onclick="showSection('mono')" class="w-max md:w-full whitespace-nowrap text-left px-4 py-2 md:p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">02. Monoalphabetic</button>
-            <button onclick="showSection('rsa')" class="w-max md:w-full whitespace-nowrap text-left px-4 py-2 md:p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">03. RSA Algorithm</button>
-            <button onclick="showSection('playfair')" class="w-max md:w-full whitespace-nowrap text-left px-4 py-2 md:p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">04. Playfair Cipher</button>
-            <button onclick="showSection('hill')" class="w-max md:w-full whitespace-nowrap text-left px-4 py-2 md:p-3 rounded hover:bg-gray-700 focus:bg-blue-600 transition">05. Hill Cipher</button>
-        </nav>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 10%, #d9f4ff 0%, transparent 45%),
+        radial-gradient(circle at 90% 90%, #ffe8c8 0%, transparent 35%),
+        linear-gradient(160deg, #f5f8ff 0%, #f7f3ec 100%);
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(8px);
+      padding: 22px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.7rem;
+      line-height: 1.1;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin: 8px 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .exp-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 12px;
+      text-align: left;
+      padding: 10px 12px;
+      font-family: "Space Grotesk", sans-serif;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+      animation: riseIn 420ms ease both;
+    }
+
+    .nav-btn:hover {
+      transform: translateX(2px);
+      border-color: #b8c6f2;
+      background: #f8faff;
+    }
+
+    .nav-btn.active {
+      border-color: var(--accent);
+      background: #e9f0ff;
+      box-shadow: inset 0 0 0 1px rgba(15, 76, 222, 0.2);
+    }
+
+    .nav-btn .small {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-top: 2px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 8px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #e7fff8;
+      color: #0d725d;
+      font-size: 0.8rem;
+      border: 1px solid #b8f0df;
+    }
+
+    .content {
+      padding: 28px;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      background: linear-gradient(140deg, #fef6df, #e9f4ff 58%, #f0ecff);
+      border: 1px solid #eadfaa;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+      animation: riseIn 700ms ease both;
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: 1.45rem;
+    }
+
+    .hero p {
+      color: var(--muted);
+      margin: 8px 0 0;
+      line-height: 1.45;
+    }
+
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: none;
+      animation: riseIn 320ms ease both;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 1.35rem;
+    }
+
+    .explain {
+      color: var(--muted);
+      margin-top: 0;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .formula {
+      font-family: "IBM Plex Mono", monospace;
+      background: #f5f8ff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      margin: 8px 0 14px;
+      overflow-x: auto;
+      font-size: 0.92rem;
+    }
+
+    .formula .katex-display {
+      margin: 0.45em 0;
+    }
+
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 0.95rem;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid #c8d5f0;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fcfdff;
+      color: var(--ink);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 14px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      padding: 10px 13px;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.03);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn.secondary {
+      background: #eaf0ff;
+      color: #1f3668;
+      border: 1px solid #c8d5f0;
+    }
+
+    .btn.good {
+      background: #e3fff7;
+      color: #0f6f5e;
+      border: 1px solid #b6f2e0;
+    }
+
+    .result {
+      background: #f8fbff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      line-height: 1.5;
+      overflow-x: auto;
+    }
+
+    .mono {
+      font-family: "IBM Plex Mono", monospace;
+      word-break: break-word;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 6px;
+    }
+
+    .algo {
+      margin: 12px 0;
+      border: 1px solid #d7e0f7;
+      border-radius: 12px;
+      background: #f9fbff;
+      padding: 10px 12px;
+    }
+
+    .algo summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .algo ol {
+      margin: 10px 0 0 20px;
+      color: #324766;
+      line-height: 1.45;
+    }
+
+    .hero-actions {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .link-chip {
+      border: 1px solid #c6d4f4;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      color: #274375;
+      background: #f4f8ff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    th,
+    td {
+      border: 1px solid #d5def3;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f5ff;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .flow-box {
+      border: 1px solid #cfe0ff;
+      background: #f7faff;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .warning {
+      color: var(--danger);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #b7e7da;
+      background: #ebfff8;
+      color: #0a705c;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    @keyframes riseIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .exp-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.two,
+      .grid.three,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .content {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1 class="title">Crypto Experiments Lab</h1>
+      <p class="subtitle">Modern explainable simulator for your C++ experiments with demo defaults and custom values.</p>
+      <div class="exp-list" id="navList"></div>
+      <span class="badge">Visual + Editable + Step-by-step</span>
     </aside>
 
-    <main class="flex-1 p-4 sm:p-6 md:p-10 overflow-y-auto w-full">
-        
-        <section id="caesar" class="cipher-section active max-w-3xl mx-auto">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">Caesar Cipher</h1>
-            <p class="mb-6 text-gray-600 text-sm md:text-base">A substitution cipher that shifts characters by a fixed number of positions.</p>
-            
-            <div class="mb-6 p-4 md:p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
-                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Math</h2>
-                <p class="text-xs md:text-sm text-blue-800 mb-2">The cipher replaces each letter in the plaintext with a letter a fixed number of positions down the alphabet.</p>
-                <ul class="list-disc ml-5 text-xs md:text-sm text-blue-900 space-y-1 font-mono break-words">
-                    <li>Encryption: E(x) = (x + shift) mod 26</li>
-                    <li>Decryption: D(x) = (x - shift) mod 26</li>
-                </ul>
-                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/01_ceaser_cipher.cpp" target="_blank" class="inline-flex items-center mt-4 text-xs md:text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
-                    <svg class="w-4 h-4 mr-1 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
-                    View C++ Source Code
-                </a>
+    <main class="content">
+      <section class="hero">
+        <h2>Understand, test, and visualize every experiment</h2>
+        <p>
+          Each panel reproduces your experiment logic from the experiements folder.
+          Use <strong>Use Given Values</strong> for your original lab examples, then change inputs to test custom scenarios.
+        </p>
+        <div class="hero-actions">
+          <button class="btn good" onclick="exportLastRun()">Export Last Run JSON</button>
+          <button class="btn secondary" onclick="copyPanelLink()">Copy Shareable Link</button>
+          <span class="link-chip" id="currentPanelLink">#caesar</span>
+        </div>
+      </section>
+
+      <section id="panel-caesar" class="panel active">
+        <h3>01. Caesar Cipher</h3>
+        <p class="explain">Shift-based substitution where each alphabetic character moves by a fixed key.</p>
+        <div class="formula mono">$$
+      \begin{aligned}
+      E_k(x) &= (x + k) \bmod 26 \\
+      D_k(x) &= (x - k) \bmod 26
+      \end{aligned}
+      $$</div>
+        <details class="algo">
+          <summary>Mathematical algorithm</summary>
+          <div class="formula mono">$$
+      \begin{aligned}
+      &\text{Index map: } A \mapsto 0,\,B \mapsto 1,\,\dots,\,Z \mapsto 25,\quad x \in \mathbb{Z}_{26} \\
+      &\text{Given } k \in \mathbb{Z}_{26} \\
+      &E_k(x) = (x+k) \bmod 26,\qquad D_k(x) = (x-k) \bmod 26 \\
+      &\forall c \notin \{A\dots Z, a\dots z\}:\ E_k(c)=c,\ D_k(c)=c
+      \end{aligned}
+      $$</div>
+        </details>
+
+        <div class="grid two">
+          <div>
+            <label for="caesarText">Plaintext</label>
+            <input id="caesarText" value="HELLO WORLD">
+          </div>
+          <div>
+            <label for="caesarShift">Shift</label>
+            <input id="caesarShift" type="number" value="3">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn primary" onclick="runCaesar()">Run Caesar</button>
+          <button class="btn secondary" onclick="presetCaesar()">Use Given Values</button>
+          <button class="btn good" onclick="bruteCaesar()">Brute-force (1..25)</button>
+        </div>
+
+        <div class="result">
+          <div><strong>Encrypted:</strong> <span class="mono" id="caesarEnc"></span></div>
+          <div><strong>Decrypted:</strong> <span class="mono" id="caesarDec"></span></div>
+        </div>
+
+        <table id="caesarTable"></table>
+        <div class="result mono" id="caesarBrute"></div>
+      </section>
+
+      <section id="panel-mono" class="panel">
+        <h3>02. Monoalphabetic Cipher</h3>
+        <p class="explain">One fixed substitution alphabet maps A..Z to a permutation key. Includes frequency-analysis attack visualization.</p>
+        <div class="formula mono">$$
+      \begin{aligned}
+      \pi &: \Sigma \to \Sigma,\ \Sigma=\{A,\dots,Z\} \\
+      C_i &= \pi(P_i),\quad P_i = \pi^{-1}(C_i)
+      \end{aligned}
+      $$</div>
+        <details class="algo">
+          <summary>Mathematical algorithm</summary>
+          <div class="formula mono">$$
+      \begin{aligned}
+      &\text{Let } \Sigma=\{A,\dots,Z\},\ \pi \in S_{26} \\
+      &\forall i:\ C_i=\pi(P_i),\quad P_i=\pi^{-1}(C_i) \\
+      &f_C(a)=\sum_i \mathbf{1}[C_i=a],\quad a\in\Sigma \\
+      &\text{Sort } a \text{ by } f_C(a)\ \text{and map to } (E,T,A,O,I,N,\dots)
+      \end{aligned}
+      $$</div>
+        </details>
+
+        <div class="grid">
+          <div>
+            <label for="monoText">Plaintext</label>
+            <textarea id="monoText"></textarea>
+          </div>
+          <div>
+            <label for="monoKey">26-letter key</label>
+            <input id="monoKey" maxlength="26" value="QWERTYUIOPASDFGHJKLZXCVBNM">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn primary" onclick="runMono()">Encrypt + Decrypt</button>
+          <button class="btn secondary" onclick="presetMono()">Use Given Values</button>
+          <button class="btn good" onclick="runFrequencyAttack()">Run Frequency Attack</button>
+        </div>
+
+        <div class="result">
+          <div><strong>Encrypted:</strong> <span class="mono" id="monoEnc"></span></div>
+          <div><strong>Decrypted:</strong> <span class="mono" id="monoDec"></span></div>
+        </div>
+
+        <table id="monoMapTable"></table>
+        <div class="result">
+          <div><strong>Attack Mapping (cipher -> guessed plain):</strong> <span class="mono" id="monoAttackMap"></span></div>
+          <div><strong>Attack Output:</strong> <span class="mono" id="monoAttackText"></span></div>
+        </div>
+      </section>
+
+      <section id="panel-rsa" class="panel">
+        <h3>03. RSA Algorithm</h3>
+        <p class="explain">Public-key cryptography using modulus n = p*q and private exponent d = e^-1 mod phi(n).</p>
+        <div class="formula mono">$$
+      \begin{aligned}
+      n &= pq,\quad \varphi(n)=(p-1)(q-1) \\
+      C &= M^e \bmod n \\
+      M &= C^d \bmod n
+      \end{aligned}
+      $$</div>
+        <details class="algo">
+          <summary>Mathematical algorithm</summary>
+          <div class="formula mono">$$
+      \begin{aligned}
+      &p,q\text{ prime},\ n=pq,\ \varphi(n)=(p-1)(q-1) \\
+      &1<e<\varphi(n),\ \gcd(e,\varphi(n))=1 \\
+      &d \equiv e^{-1} \pmod{\varphi(n)} \\
+      &\text{Public key } (e,n),\ \text{Private key } (d,n) \\
+      &C\equiv M^e\pmod n,\quad M\equiv C^d\pmod n
+      \end{aligned}
+      $$</div>
+        </details>
+
+        <div class="grid three">
+          <div>
+            <label for="rsaMsg">Message (number)</label>
+            <input id="rsaMsg" type="number" value="65">
+          </div>
+          <div>
+            <label for="rsaE">e (public exponent)</label>
+            <input id="rsaE" type="number" value="17">
+          </div>
+          <div>
+            <label for="rsaMode">Prime mode</label>
+            <select id="rsaMode">
+              <option value="auto">Auto random [50..150]</option>
+              <option value="manual">Manual p and q</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div>
+            <label for="rsaP">p</label>
+            <input id="rsaP" type="number" value="61">
+          </div>
+          <div>
+            <label for="rsaQ">q</label>
+            <input id="rsaQ" type="number" value="53">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn primary" onclick="runRSA()">Generate Keys + Encrypt</button>
+          <button class="btn secondary" onclick="presetRSA()">Use Given Values</button>
+        </div>
+
+        <div class="result" id="rsaResult"></div>
+      </section>
+
+      <section id="panel-playfair" class="panel">
+        <h3>04. Playfair Cipher</h3>
+        <p class="explain">Digraph cipher with a 5x5 matrix (I/J merged). Encrypt by row, column, or rectangle rules.</p>
+        <div class="formula mono">$$
+      \begin{aligned}
+      r_1=r_2&:\ (c_1,c_2)\mapsto(c_1+1,c_2+1)\bmod 5 \\
+      c_1=c_2&:\ (r_1,r_2)\mapsto(r_1+1,r_2+1)\bmod 5 \\
+      	ext{else}&:\ (r_1,c_1),(r_2,c_2)\mapsto(r_1,c_2),(r_2,c_1)
+      \end{aligned}
+      $$</div>
+        <details class="algo">
+          <summary>Mathematical algorithm</summary>
+          <div class="formula mono">$$
+      \begin{aligned}
+      &M\in\Sigma^{5\times 5},\ \Sigma=\{A,\dots,Z\}\setminus\{J\},\ J\mapsto I \\
+      &\text{Digraph prep: } (a,b),\ a=b\Rightarrow (a,X,b),\ |P|\text{ odd}\Rightarrow X\text{ pad} \\
+      &\operatorname{pos}(a)=(r_1,c_1),\ \operatorname{pos}(b)=(r_2,c_2) \\
+      &r_1=r_2:\ (a,b)\mapsto(M_{r_1,(c_1+1)\bmod 5},\ M_{r_2,(c_2+1)\bmod 5}) \\
+      &c_1=c_2:\ (a,b)\mapsto(M_{(r_1+1)\bmod 5,c_1},\ M_{(r_2+1)\bmod 5,c_2}) \\
+      &\text{otherwise: } (a,b)\mapsto(M_{r_1,c_2},\ M_{r_2,c_1})
+      \end{aligned}
+      $$</div>
+        </details>
+
+        <div class="grid two">
+          <div>
+            <label for="playText">Plaintext</label>
+            <input id="playText" value="INSTRUMENTS">
+          </div>
+          <div>
+            <label for="playKey">Key</label>
+            <input id="playKey" value="MONARCHY">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn primary" onclick="runPlayfair()">Run Playfair</button>
+          <button class="btn secondary" onclick="presetPlayfair()">Use Given Values</button>
+        </div>
+
+        <div class="result">
+          <div><strong>Formatted:</strong> <span class="mono" id="playFmt"></span></div>
+          <div><strong>Encrypted:</strong> <span class="mono" id="playEnc"></span></div>
+          <div><strong>Decrypted:</strong> <span class="mono" id="playDec"></span></div>
+        </div>
+
+        <table id="playMatrix"></table>
+        <table id="playSteps"></table>
+      </section>
+
+      <section id="panel-hill" class="panel">
+        <h3>05. Hill Cipher (2x2)</h3>
+        <p class="explain">Linear algebra based cipher with modulo 26 matrix multiplication.</p>
+        <div class="formula mono">$$
+\begin{aligned}
+C &= KP \pmod{26} \\
+P &= K^{-1}C \pmod{26} \\
+\gcd(\det K,26)&=1
+\end{aligned}
+$$</div>
+        <details class="algo">
+          <summary>Mathematical algorithm</summary>
+          <div class="formula mono">$$
+\begin{aligned}
+&K=\begin{bmatrix}k_{00}&k_{01}\\k_{10}&k_{11}\end{bmatrix}\in\mathbb{Z}_{26}^{2\times2} \\
+&\det(K)=k_{00}k_{11}-k_{01}k_{10}\pmod{26} \\
+&\text{Valid }\Leftrightarrow \gcd(\det(K),26)=1 \\
+&C\equiv KP\pmod{26},\quad P\equiv K^{-1}C\pmod{26} \\
+&K^{-1}\equiv (\det K)^{-1}\,\operatorname{adj}(K)\pmod{26}
+\end{aligned}
+$$</div>
+        </details>
+
+        <div class="grid two">
+          <div>
+            <label for="hillText">Plaintext</label>
+            <input id="hillText" value="UNIVERSITY">
+          </div>
+          <div>
+            <label>Key matrix</label>
+            <div class="grid two">
+              <input id="h00" type="number" value="3">
+              <input id="h01" type="number" value="3">
+              <input id="h10" type="number" value="2">
+              <input id="h11" type="number" value="5">
             </div>
+          </div>
+        </div>
 
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Plain Text</label>
-                    <input type="text" id="caesar-input" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" value="HELLO WORLD">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Shift (Key)</label>
-                    <input type="number" id="caesar-shift" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" value="3">
-                </div>
-                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                    <button onclick="runCaesar()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 w-full sm:w-auto">Run Cipher</button>
-                </div>
-                <div class="mt-4 p-4 bg-gray-100 rounded border break-all">
-                    <p><strong>Encrypted:</strong> <span id="caesar-enc" class="text-red-600 font-mono"></span></p>
-                    <p class="mt-2"><strong>Decrypted:</strong> <span id="caesar-dec" class="text-green-600 font-mono"></span></p>
-                </div>
-            </div>
-        </section>
+        <div class="btn-row">
+          <button class="btn primary" onclick="runHill()">Run Hill</button>
+          <button class="btn secondary" onclick="presetHill()">Use Given Values</button>
+        </div>
 
-        <section id="mono" class="cipher-section max-w-3xl mx-auto">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">Monoalphabetic Cipher</h1>
-            <p class="mb-6 text-gray-600 text-sm md:text-base">Maps each letter of the alphabet to a fixed, alternative letter.</p>
-            
-            <div class="mb-6 p-4 md:p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
-                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Explanation</h2>
-                <p class="text-xs md:text-sm text-blue-800 mb-2">Unlike the Caesar cipher which uses a mathematical shift, this cipher creates a strict 1-to-1 mapping between the standard alphabet and a permuted 26-letter key.</p>
-                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/02_monoalphabetic_cipher.cpp" target="_blank" class="inline-flex items-center mt-2 text-xs md:text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
-                    <svg class="w-4 h-4 mr-1 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
-                    View C++ Source Code
-                </a>
-            </div>
+        <div class="warning" id="hillWarn"></div>
+        <div class="result" id="hillResult"></div>
+        <table id="hillSteps"></table>
+      </section>
 
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md space-y-4 mb-6">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Plain Text (Use a long paragraph for better analysis!)</label>
-                    <textarea id="mono-input" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" rows="3">DEFEND THE EAST WALL OF THE CASTLE AT DAWN. THE ENEMY IS APPROACHING FAST AND WE MUST HOLD THE LINE TO ENSURE OUR VICTORY.</textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">26-Letter Key</label>
-                    <input type="text" id="mono-key" class="w-full border p-2 rounded uppercase focus:ring-2 focus:ring-blue-500" value="QWERTYUIOPASDFGHJKLZXCVBNM" maxlength="26">
-                </div>
-                <button onclick="runMono()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 w-full sm:w-auto">Encrypt & Decrypt</button>
-                <div class="mt-4 p-4 bg-gray-100 rounded border break-words">
-                    <p><strong>Encrypted:</strong> <span id="mono-enc" class="text-red-600 font-mono"></span></p>
-                    <p class="mt-2"><strong>Decrypted:</strong> <span id="mono-dec" class="text-green-600 font-mono"></span></p>
-                </div>
-            </div>
+      <section id="panel-dh" class="panel">
+        <h3>06. Diffie-Hellman Key Exchange</h3>
+        <p class="explain">Both parties derive the same shared secret without sending their private keys.</p>
+        <div class="formula mono">$$
+      \begin{aligned}
+      A &= g^a \bmod p \\
+      B &= g^b \bmod p \\
+      S_A &= B^a \bmod p \\
+      S_B &= A^b \bmod p
+      \end{aligned}
+      $$</div>
+        <details class="algo">
+          <summary>Mathematical algorithm</summary>
+          <div class="formula mono">$$
+      \begin{aligned}
+      &\text{Public: } p\text{ prime},\ g\in\mathbb{Z}_p^* \\
+      &\text{Alice private }a,\ \text{Bob private }b \\
+      &A\equiv g^a\pmod p,\quad B\equiv g^b\pmod p \\
+      &S_A\equiv B^a\equiv (g^b)^a\equiv g^{ab}\pmod p \\
+      &S_B\equiv A^b\equiv (g^a)^b\equiv g^{ab}\pmod p \\
+      &\therefore\ S_A=S_B
+      \end{aligned}
+      $$</div>
+        </details>
 
-            <div class="bg-purple-50 p-4 md:p-6 rounded-lg shadow-md border border-purple-200">
-                <h3 class="text-lg md:text-xl font-bold text-purple-800 mb-2">Cryptanalysis: Frequency Analysis Attack</h3>
-                <p class="text-xs md:text-sm text-purple-700 mb-4">By counting the most frequent letters in the ciphertext and mapping them to the most frequent letters in the English language (<code class="font-bold">E, T, A, O, I, N...</code>), we can attempt to crack the cipher without the key. <br><br><em>Note: This works best on very long pieces of text!</em></p>
-                
-                <button onclick="runFrequencyAnalysis()" class="bg-purple-600 text-white px-6 py-2 rounded shadow hover:bg-purple-700 w-full sm:w-auto mb-4">Run Attack on Ciphertext</button>
-                
-                <div id="mono-attack-results" class="hidden space-y-4">
-                    <div class="p-4 bg-white rounded border border-purple-200">
-                        <p class="text-sm font-semibold text-gray-700 mb-2">Calculated Mapping (Cipher -> Guessed Plaintext):</p>
-                        <p id="mono-freq-map" class="font-mono text-xs md:text-sm tracking-wide text-purple-600 break-words leading-relaxed"></p>
-                    </div>
-                    <div class="p-4 bg-white rounded border border-purple-200">
-                        <p class="text-sm font-semibold text-gray-700 mb-2">Cracked Attempt:</p>
-                        <p id="mono-attack-text" class="text-gray-800 font-mono text-sm break-words"></p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="grid two">
+          <div>
+            <label for="dhP">Prime p</label>
+            <input id="dhP" type="number" value="23">
+          </div>
+          <div>
+            <label for="dhG">Generator g</label>
+            <input id="dhG" type="number" value="5">
+          </div>
+          <div>
+            <label for="dhA">Alice private key</label>
+            <input id="dhA" type="number" value="4">
+          </div>
+          <div>
+            <label for="dhB">Bob private key</label>
+            <input id="dhB" type="number" value="7">
+          </div>
+        </div>
 
-        <section id="rsa" class="cipher-section max-w-3xl mx-auto">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">RSA Algorithm</h1>
-            <p class="mb-6 text-gray-600 text-sm md:text-base">Public-key cryptography based on factoring large prime numbers.</p>
-            
-            <div class="mb-6 p-4 md:p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
-                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Math</h2>
-                <ul class="list-disc ml-5 text-xs md:text-sm text-blue-900 space-y-1">
-                    <li><strong>Key Generation:</strong> Generate two primes <i>p</i> and <i>q</i>. Compute the modulus <i>n = p &times; q</i> and the totient <i>&phi;(n) = (p-1)(q-1)</i>.</li>
-                    <li><strong>Public Key (e, n):</strong> Choose an integer <i>e</i> such that 1 &lt; <i>e</i> &lt; <i>&phi;(n)</i> and gcd(<i>e</i>, <i>&phi;(n)</i>) = 1.</li>
-                    <li><strong>Private Key (d, n):</strong> Compute <i>d</i> as the modular multiplicative inverse of <i>e</i> modulo <i>&phi;(n)</i>.</li>
-                    <li class="font-mono mt-2 break-all">Encryption: C = M<sup>e</sup> mod n</li>
-                    <li class="font-mono break-all">Decryption: M = C<sup>d</sup> mod n</li>
-                </ul>
-                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/03_rsa_algo.cpp" target="_blank" class="inline-flex items-center mt-4 text-xs md:text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
-                    <svg class="w-4 h-4 mr-1 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
-                    View C++ Source Code
-                </a>
-            </div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="runDH()">Run Diffie-Hellman</button>
+          <button class="btn secondary" onclick="presetDH()">Use Given Values</button>
+        </div>
 
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Message (ASCII Number, e.g., 65 for 'A')</label>
-                    <input type="number" id="rsa-input" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" value="65">
-                </div>
-                <button onclick="runRSA()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 w-full sm:w-auto">Generate Keys & Simulate</button>
-                <div class="mt-4 p-4 bg-gray-100 rounded border space-y-2 text-sm md:text-base break-words">
-                    <p><strong>Primes:</strong> p = <span id="rsa-p"></span>, q = <span id="rsa-q"></span></p>
-                    <p><strong>Keys:</strong> Public (e, n) = <span id="rsa-pub" class="font-mono text-blue-600"></span> | Private (d, n) = <span id="rsa-priv" class="font-mono text-purple-600"></span></p>
-                    <p><strong>Encrypted Cipher:</strong> <span id="rsa-enc" class="text-red-600 font-mono"></span></p>
-                    <p><strong>Decrypted Message:</strong> <span id="rsa-dec" class="text-green-600 font-mono"></span></p>
-                </div>
-            </div>
-        </section>
+        <div class="flow" id="dhFlow"></div>
+        <div class="result" id="dhResult"></div>
+      </section>
 
-        <section id="playfair" class="cipher-section max-w-3xl mx-auto">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">Playfair Cipher</h1>
-            <p class="mb-6 text-gray-600 text-sm md:text-base">Encrypts pairs of letters (digraphs) using a 5x5 matrix.</p>
-            
-            <div class="mb-6 p-4 md:p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
-                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Math</h2>
-                <p class="text-xs md:text-sm text-blue-800 mb-2">Constructs a 5x5 grid using a key (treating 'J' as 'I'). Plaintext is split into pairs. The encryption follows three geometric rules:</p>
-                <ul class="list-disc ml-5 text-xs md:text-sm text-blue-900 space-y-1">
-                    <li><strong>Same Row:</strong> Replace each with the letter to its right (wrapping around).</li>
-                    <li><strong>Same Column:</strong> Replace each with the letter below it (wrapping around).</li>
-                    <li><strong>Rectangle:</strong> Form a rectangle with the two letters and swap them with the letters on the opposite horizontal corners.</li>
-                </ul>
-                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/04_playfair_cipher.cpp" target="_blank" class="inline-flex items-center mt-4 text-xs md:text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
-                    <svg class="w-4 h-4 mr-1 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
-                    View C++ Source Code
-                </a>
-            </div>
+      <section id="panel-block" class="panel">
+        <h3>07. Block Cipher Modes (ECB, CBC, CFB, OFB, CTR)</h3>
+        <p class="explain">Your C++ files use XOR as block encryption primitive. This simulator keeps the same logic and visualizes each mode chain.</p>
+        <div class="formula mono">$$
+      \begin{aligned}
+      	ext{Block size} &= 8\ \text{bytes} \\
+      E_K(X) &= X \oplus K
+      \end{aligned}
+      $$</div>
+        <details class="algo">
+          <summary>Mathematical algorithm</summary>
+          <div class="formula mono">$$
+      \begin{aligned}
+      &E_K(X)=X\oplus K \\
+      &\text{ECB: } C_i=E_K(P_i) \\
+      &\text{CBC: } C_i=E_K(P_i\oplus C_{i-1}),\ C_0=IV \\
+      &\text{CFB: } C_i=P_i\oplus \operatorname{MSB}_s(E_K(R_i)),\ R_{i+1}=\operatorname{shift}(R_i,C_i) \\
+      &\text{OFB: } O_i=E_K(O_{i-1}),\ O_0=Nonce,\ C_i=P_i\oplus O_i \\
+      &\text{CTR: } C_i=P_i\oplus E_K(CTR_i),\ CTR_{i+1}=CTR_i+1 \\
+      &\text{For CFB/OFB/CTR, decryption uses the same }\oplus\text{ form.}
+      \end{aligned}
+      $$</div>
+        </details>
 
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">Plain Text</label>
-                        <input type="text" id="playfair-input" class="w-full border p-2 rounded uppercase focus:ring-2 focus:ring-blue-500" value="INSTRUMENTS">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">Key</label>
-                        <input type="text" id="playfair-key" class="w-full border p-2 rounded uppercase focus:ring-2 focus:ring-blue-500" value="MONARCHY">
-                    </div>
-                </div>
-                <button onclick="runPlayfair()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 w-full sm:w-auto">Run Cipher</button>
-                
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="col-span-1 bg-gray-50 p-4 border rounded text-center overflow-x-auto">
-                        <h3 class="font-bold mb-2 text-sm text-gray-600">Generated Matrix</h3>
-                        <div id="playfair-matrix" class="font-mono text-lg tracking-widest leading-loose"></div>
-                    </div>
-                    <div class="col-span-1 md:col-span-2 p-4 bg-gray-100 rounded border space-y-2 break-all text-sm md:text-base">
-                        <p><strong>Formatted Text:</strong> <span id="playfair-fmt" class="font-mono text-gray-700"></span></p>
-                        <p><strong>Encrypted:</strong> <span id="playfair-enc" class="text-red-600 font-mono"></span></p>
-                        <p><strong>Decrypted:</strong> <span id="playfair-dec" class="text-green-600 font-mono"></span></p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="grid two">
+          <div>
+            <label for="blkMode">Mode</label>
+            <select id="blkMode">
+              <option>ECB</option>
+              <option>CBC</option>
+              <option>CFB</option>
+              <option>OFB</option>
+              <option>CTR</option>
+            </select>
+          </div>
+          <div>
+            <label for="blkSeg">CFB segment bytes</label>
+            <input id="blkSeg" type="number" value="8">
+          </div>
+          <div>
+            <label for="blkText">Plaintext</label>
+            <input id="blkText" value="ADMINISTRATOR   ADMINISTRATOR">
+          </div>
+          <div>
+            <label for="blkKey">Key (8 chars)</label>
+            <input id="blkKey" value="ABCDEFGH">
+          </div>
+          <div>
+            <label for="blkIV">IV/Nonce (8 chars)</label>
+            <input id="blkIV" value="12345678">
+          </div>
+          <div>
+            <label for="blkCtr">Initial Counter (8 chars)</label>
+            <input id="blkCtr" value="00000001">
+          </div>
+        </div>
 
-        <section id="hill" class="cipher-section max-w-3xl mx-auto mb-10">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">Hill Cipher</h1>
-            <p class="mb-6 text-gray-600 text-sm md:text-base">A polyalphabetic substitution cipher based on linear algebra.</p>
-            
-            <div class="mb-6 p-4 md:p-5 bg-blue-50 border-l-4 border-blue-600 rounded shadow-sm">
-                <h2 class="text-lg font-bold text-blue-900 mb-2">Algorithm & Math</h2>
-                <p class="text-xs md:text-sm text-blue-800 mb-2">Operates on blocks of text using matrix multiplication. For a 2x2 key matrix K and a plaintext vector P:</p>
-                <ul class="list-disc ml-5 text-xs md:text-sm text-blue-900 space-y-1 font-mono">
-                    <li>Encryption: C = (P &times; K) mod 26</li>
-                    <li>Decryption: P = (C &times; K<sup>-1</sup>) mod 26</li>
-                </ul>
-                <p class="text-xs md:text-sm text-blue-800 mt-2">The key matrix must be invertible modulo 26 (i.e., gcd(det(K), 26) = 1).</p>
-                <a href="https://github.com/SaifullahMnsur-Again/cryptography-course/blob/main/experiements/05_hill_cipher.cpp" target="_blank" class="inline-flex items-center mt-4 text-xs md:text-sm font-semibold text-blue-700 hover:text-blue-900 hover:underline">
-                    <svg class="w-4 h-4 mr-1 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
-                    View C++ Source Code
-                </a>
-            </div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="runBlockMode()">Run Selected Mode</button>
+          <button class="btn secondary" onclick="presetBlock()">Use Given Values</button>
+          <button class="btn good" onclick="compareAllModes()">Compare All Modes</button>
+        </div>
 
-            <div class="bg-white p-4 md:p-6 rounded-lg shadow-md space-y-4 mb-6">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Plain Text</label>
-                    <input type="text" id="hill-input" class="w-full border p-2 rounded uppercase focus:ring-2 focus:ring-blue-500" value="HELP">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-semibold mb-1">2x2 Key Matrix</label>
-                    <div class="grid grid-cols-2 gap-2 w-full max-w-[12rem]">
-                        <input type="number" id="hill-k00" class="border p-2 rounded text-center" value="3">
-                        <input type="number" id="hill-k01" class="border p-2 rounded text-center" value="3">
-                        <input type="number" id="hill-k10" class="border p-2 rounded text-center" value="2">
-                        <input type="number" id="hill-k11" class="border p-2 rounded text-center" value="5">
-                    </div>
-                </div>
+        <div class="result" id="blkResult"></div>
+        <table id="blkTable"></table>
+        <table id="blkCompareTable"></table>
+      </section>
 
-                <button onclick="runHill()" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 w-full sm:w-auto">Run Cipher</button>
-                <div id="hill-error" class="text-red-600 font-bold hidden bg-red-50 p-3 rounded border border-red-200 text-sm"></div>
+      <section id="panel-ecc" class="panel">
+        <h3>08. Elliptic Curve Diffie-Hellman (ECDH)</h3>
+        <p class="explain">Same key exchange idea as DH, but over elliptic curve points with scalar multiplication.</p>
+        <div class="formula mono">$$
+\begin{aligned}
+E: y^2 &\equiv x^3+ax+b \pmod p \\
+P_{pub} &= n_{priv}\,G \\
+S &= n_{priv}\,P_{other}
+\end{aligned}
+$$</div>
+        <details class="algo">
+          <summary>Mathematical algorithm</summary>
+          <div class="formula mono">$$
+\begin{aligned}
+&E(\mathbb{F}_p):\ y^2\equiv x^3+ax+b\pmod p,\quad G\in E(\mathbb{F}_p) \\
+&\text{Alice private }n_A,\ \text{Bob private }n_B \\
+&P_A=n_A G,\quad P_B=n_B G \\
+&S_A=n_A P_B=n_A(n_B G) \\
+&S_B=n_B P_A=n_B(n_A G) \\
+&\therefore\ S_A=S_B=(n_A n_B)G
+\end{aligned}
+$$</div>
+        </details>
 
-                <div class="mt-4 p-4 bg-gray-100 rounded border space-y-2 text-sm md:text-base break-words">
-                    <p><strong>Determinant:</strong> <span id="hill-det"></span></p>
-                    <p><strong>Inverse Matrix mod 26:</strong> <span id="hill-inv" class="font-mono text-purple-600"></span></p>
-                    <p><strong>Encrypted:</strong> <span id="hill-enc" class="text-red-600 font-mono"></span></p>
-                    <p><strong>Decrypted:</strong> <span id="hill-dec" class="text-green-600 font-mono"></span></p>
-                </div>
-            </div>
+        <div class="grid three">
+          <div>
+            <label for="eccP">Prime p</label>
+            <input id="eccP" type="number" value="17">
+          </div>
+          <div>
+            <label for="eccA">a</label>
+            <input id="eccA" type="number" value="2">
+          </div>
+          <div>
+            <label for="eccB">b</label>
+            <input id="eccB" type="number" value="2">
+          </div>
+          <div>
+            <label for="eccGx">Gx</label>
+            <input id="eccGx" type="number" value="5">
+          </div>
+          <div>
+            <label for="eccGy">Gy</label>
+            <input id="eccGy" type="number" value="1">
+          </div>
+          <div>
+            <label for="eccAlice">Alice private</label>
+            <input id="eccAlice" type="number" value="3">
+          </div>
+          <div>
+            <label for="eccBob">Bob private</label>
+            <input id="eccBob" type="number" value="3">
+          </div>
+        </div>
 
-            <div id="hill-steps-container" class="hidden bg-gray-800 text-green-400 p-4 md:p-6 rounded-lg shadow-md font-mono text-xs md:text-sm overflow-x-auto">
-                <h3 class="text-base md:text-lg font-bold text-white mb-4 border-b border-gray-600 pb-2">Step-by-Step Calculation</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="text-gray-300 mb-2 font-bold underline">Encryption Process</h4>
-                        <div id="hill-enc-steps" class="space-y-3 whitespace-nowrap"></div>
-                    </div>
-                    <div>
-                        <h4 class="text-gray-300 mb-2 font-bold underline">Decryption Process</h4>
-                        <div id="hill-dec-steps" class="space-y-3 whitespace-nowrap"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="btn-row">
+          <button class="btn primary" onclick="runECDH()">Run ECDH</button>
+          <button class="btn secondary" onclick="presetECDH()">Use Given Values</button>
+        </div>
 
+        <div class="flow" id="eccFlow"></div>
+        <div class="result" id="eccResult"></div>
+      </section>
     </main>
+  </div>
 
-    <script>
-        // Navigation Logic
-        function showSection(id) {
-            document.querySelectorAll('.cipher-section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+  <script>
+    const panels = [
+      { id: "caesar", label: "01. Caesar", hint: "Shift cipher" },
+      { id: "mono", label: "02. Monoalphabetic", hint: "Substitution map" },
+      { id: "rsa", label: "03. RSA", hint: "Public key crypto" },
+      { id: "playfair", label: "04. Playfair", hint: "Digraph matrix" },
+      { id: "hill", label: "05. Hill", hint: "Matrix mod 26" },
+      { id: "dh", label: "06. Diffie-Hellman", hint: "Shared secret" },
+      { id: "block", label: "07. Block modes", hint: "ECB/CBC/CFB/OFB/CTR" },
+      { id: "ecc", label: "08. ECC-ECDH", hint: "Elliptic curve exchange" }
+    ];
+
+    const mod = (n, m) => ((n % m) + m) % m;
+    let currentPanelId = "caesar";
+    let lastRun = { panel: "caesar", timestamp: new Date().toISOString(), data: {} };
+
+    function setLastRun(panel, data) {
+      lastRun = {
+        panel,
+        timestamp: new Date().toISOString(),
+        data
+      };
+    }
+
+    function updateLinkChip() {
+      const el = document.getElementById("currentPanelLink");
+      if (el) el.textContent = `#${currentPanelId}`;
+    }
+
+    function activatePanel(id, pushHash = true) {
+      const target = panels.find(p => p.id === id) ? id : "caesar";
+      currentPanelId = target;
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      const activeBtn = document.querySelector(`.nav-btn[data-id="${target}"]`);
+      if (activeBtn) activeBtn.classList.add("active");
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      const activePanel = document.getElementById("panel-" + target);
+      if (activePanel) activePanel.classList.add("active");
+      if (pushHash) window.location.hash = target;
+      updateLinkChip();
+    }
+
+    function copyPanelLink() {
+      const url = `${window.location.origin}${window.location.pathname}#${currentPanelId}`;
+      navigator.clipboard.writeText(url)
+        .then(() => alert("Shareable link copied."))
+        .catch(() => alert("Could not copy link."));
+    }
+
+    function exportLastRun() {
+      const blob = new Blob([JSON.stringify(lastRun, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      a.href = URL.createObjectURL(blob);
+      a.download = `crypto-${lastRun.panel}-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function makeNav() {
+      const holder = document.getElementById("navList");
+      holder.innerHTML = panels.map((p, idx) => (
+        `<button class="nav-btn ${idx === 0 ? "active" : ""}" data-id="${p.id}">
+          ${p.label}
+          <span class="small">${p.hint}</span>
+        </button>`
+      )).join("");
+
+      holder.querySelectorAll(".nav-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          activatePanel(id, true);
+        });
+      });
+
+      const fromHash = (window.location.hash || "#caesar").slice(1);
+      activatePanel(fromHash, false);
+      window.addEventListener("hashchange", () => {
+        const hashId = (window.location.hash || "#caesar").slice(1);
+        activatePanel(hashId, false);
+      });
+    }
+
+    function shiftText(str, shift) {
+      let out = "";
+      for (const ch of str) {
+        const code = ch.charCodeAt(0);
+        if (code >= 65 && code <= 90) out += String.fromCharCode(mod(code - 65 + shift, 26) + 65);
+        else if (code >= 97 && code <= 122) out += String.fromCharCode(mod(code - 97 + shift, 26) + 97);
+        else out += ch;
+      }
+      return out;
+    }
+
+    function presetCaesar() {
+      document.getElementById("caesarText").value = "HELLO WORLD";
+      document.getElementById("caesarShift").value = "3";
+      runCaesar();
+    }
+
+    function runCaesar() {
+      const text = document.getElementById("caesarText").value;
+      const shift = parseInt(document.getElementById("caesarShift").value || "0", 10);
+      const enc = shiftText(text, shift);
+      const dec = shiftText(enc, -shift);
+      document.getElementById("caesarEnc").textContent = enc;
+      document.getElementById("caesarDec").textContent = dec;
+
+      const rows = ["<tr><th>Index</th><th>Plain</th><th>Shift</th><th>Cipher</th></tr>"];
+      for (let i = 0; i < text.length; i++) {
+        rows.push(`<tr><td>${i}</td><td>${text[i]}</td><td>${shift}</td><td>${enc[i]}</td></tr>`);
+      }
+      document.getElementById("caesarTable").innerHTML = rows.join("");
+      document.getElementById("caesarBrute").textContent = "";
+      setLastRun("caesar", { plaintext: text, shift, encrypted: enc, decrypted: dec });
+    }
+
+    function bruteCaesar() {
+      const cipher = document.getElementById("caesarEnc").textContent.trim() || shiftText(document.getElementById("caesarText").value, parseInt(document.getElementById("caesarShift").value || "0", 10));
+      const lines = [];
+      for (let s = 1; s <= 25; s++) {
+        lines.push(`shift ${s}: ${shiftText(cipher, -s)}`);
+      }
+      document.getElementById("caesarBrute").textContent = lines.join("\n");
+    }
+
+    function presetMono() {
+      document.getElementById("monoText").value = "DEFEND THE EAST WALL OF THE CASTLE AT DAWN. THE ENEMY IS APPROACHING FAST AND WE MUST HOLD THE LINE TO ENSURE OUR VICTORY.";
+      document.getElementById("monoKey").value = "QWERTYUIOPASDFGHJKLZXCVBNM";
+      runMono();
+    }
+
+    function normalizeKey(key) {
+      return key.toUpperCase().replace(/[^A-Z]/g, "");
+    }
+
+    function runMono() {
+      const text = document.getElementById("monoText").value.toUpperCase();
+      const key = normalizeKey(document.getElementById("monoKey").value);
+      if (key.length !== 26 || new Set(key).size !== 26) {
+        alert("Key must be 26 unique letters.");
+        return;
+      }
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const encMap = {};
+      const decMap = {};
+      for (let i = 0; i < 26; i++) {
+        encMap[alphabet[i]] = key[i];
+        decMap[key[i]] = alphabet[i];
+      }
+      const enc = text.split("").map(c => encMap[c] || c).join("");
+      const dec = enc.split("").map(c => decMap[c] || c).join("");
+      document.getElementById("monoEnc").textContent = enc;
+      document.getElementById("monoDec").textContent = dec;
+
+      const head = "<tr><th>Plain</th><th>Mapped</th></tr>";
+      const body = alphabet.split("").map(ch => `<tr><td>${ch}</td><td>${encMap[ch]}</td></tr>`).join("");
+      document.getElementById("monoMapTable").innerHTML = head + body;
+      setLastRun("mono", { plaintext: text, key, encrypted: enc, decrypted: dec });
+    }
+
+    function runFrequencyAttack() {
+      const cipher = document.getElementById("monoEnc").textContent;
+      if (!cipher) {
+        alert("Generate ciphertext first.");
+        return;
+      }
+      const english = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
+      const arr = Array.from({ length: 26 }, (_, i) => ({ c: String.fromCharCode(65 + i), n: 0 }));
+      for (const ch of cipher) {
+        if (ch >= "A" && ch <= "Z") arr[ch.charCodeAt(0) - 65].n++;
+      }
+      arr.sort((a, b) => b.n - a.n);
+      const attackMap = {};
+      for (let i = 0; i < 26; i++) attackMap[arr[i].c] = english[i];
+
+      const guessed = cipher.split("").map(ch => {
+        if (ch >= "A" && ch <= "Z") return attackMap[ch];
+        return ch;
+      }).join("");
+
+      document.getElementById("monoAttackMap").textContent = arr.filter(x => x.n > 0).map(x => `${x.c}->${attackMap[x.c]}(${x.n})`).join(" | ");
+      document.getElementById("monoAttackText").textContent = guessed;
+      setLastRun("mono", { ciphertext: cipher, attackMap, guessedText: guessed });
+    }
+
+    function gcd(a, b) {
+      while (b !== 0) {
+        const t = b;
+        b = a % b;
+        a = t;
+      }
+      return Math.abs(a);
+    }
+
+    function isPrime(n) {
+      if (n <= 1) return false;
+      if (n <= 3) return true;
+      if (n % 2 === 0) return false;
+      for (let i = 3; i * i <= n; i += 2) {
+        if (n % i === 0) return false;
+      }
+      return true;
+    }
+
+    function randomPrime(min, max) {
+      let n = min;
+      while (!isPrime(n)) n++;
+      while (true) {
+        const r = Math.floor(Math.random() * (max - min + 1)) + min;
+        if (isPrime(r)) return r;
+      }
+    }
+
+    function powMod(base, exp, modv) {
+      let r = 1;
+      base %= modv;
+      while (exp > 0) {
+        if (exp % 2 === 1) r = (r * base) % modv;
+        base = (base * base) % modv;
+        exp = Math.floor(exp / 2);
+      }
+      return r;
+    }
+
+    function modInverse(a, m) {
+      let t = 0;
+      let newT = 1;
+      let r = m;
+      let newR = ((a % m) + m) % m;
+      while (newR !== 0) {
+        const q = Math.floor(r / newR);
+        [t, newT] = [newT, t - q * newT];
+        [r, newR] = [newR, r - q * newR];
+      }
+      if (r > 1) return -1;
+      if (t < 0) t += m;
+      return t;
+    }
+
+    function presetRSA() {
+      document.getElementById("rsaMsg").value = "65";
+      document.getElementById("rsaE").value = "17";
+      document.getElementById("rsaMode").value = "auto";
+      document.getElementById("rsaP").value = "61";
+      document.getElementById("rsaQ").value = "53";
+      runRSA();
+    }
+
+    function runRSA() {
+      let p;
+      let q;
+      const mode = document.getElementById("rsaMode").value;
+      if (mode === "auto") {
+        p = randomPrime(50, 150);
+        q = randomPrime(50, 150);
+        while (q === p) q = randomPrime(50, 150);
+      } else {
+        p = parseInt(document.getElementById("rsaP").value, 10);
+        q = parseInt(document.getElementById("rsaQ").value, 10);
+        if (!isPrime(p) || !isPrime(q) || p === q) {
+          document.getElementById("rsaResult").innerHTML = "<span class='warning'>p and q must be distinct prime numbers.</span>";
+          return;
         }
+      }
 
-        // Global Modulo Helper (JS % operator handles negative numbers poorly)
-        const mod = (n, m) => ((n % m) + m) % m;
+      let e = parseInt(document.getElementById("rsaE").value, 10);
+      const m = parseInt(document.getElementById("rsaMsg").value, 10);
+      const n = p * q;
+      const phi = (p - 1) * (q - 1);
+      if (e <= 1) e = 2;
+      while (e < phi && gcd(e, phi) !== 1) e++;
+      const d = modInverse(e, phi);
+      if (d === -1) {
+        document.getElementById("rsaResult").innerHTML = "<span class='warning'>Could not compute modular inverse d.</span>";
+        return;
+      }
+      const c = powMod(m, e, n);
+      const dec = powMod(c, d, n);
+      const charHint = dec >= 32 && dec <= 126 ? String.fromCharCode(dec) : "(non-printable)";
 
-        // --- 01. Caesar Cipher ---
-        function runCaesar() {
-            const text = document.getElementById('caesar-input').value;
-            const shift = parseInt(document.getElementById('caesar-shift').value) || 0;
-            
-            function shiftText(str, s) {
-                let result = "";
-                for (let i = 0; i < str.length; i++) {
-                    let c = str.charCodeAt(i);
-                    if (c >= 65 && c <= 90) result += String.fromCharCode(mod(c - 65 + s, 26) + 65);
-                    else if (c >= 97 && c <= 122) result += String.fromCharCode(mod(c - 97 + s, 26) + 97);
-                    else result += str[i];
-                }
-                return result;
-            }
+      document.getElementById("rsaResult").innerHTML = `
+        <div><span class="pill">p=${p}</span><span class="pill">q=${q}</span><span class="pill">n=${n}</span><span class="pill">phi=${phi}</span></div>
+        <div><strong>Public key:</strong> <span class="mono">(${e}, ${n})</span></div>
+        <div><strong>Private key:</strong> <span class="mono">(${d}, ${n})</span></div>
+        <div><strong>Cipher:</strong> <span class="mono">${c}</span></div>
+        <div><strong>Decrypted:</strong> <span class="mono">${dec}</span> ${charHint}</div>
+      `;
+      setLastRun("rsa", { p, q, n, phi, e, d, message: m, cipher: c, decrypted: dec });
+    }
 
-            const encrypted = shiftText(text, shift);
-            document.getElementById('caesar-enc').innerText = encrypted;
-            document.getElementById('caesar-dec').innerText = shiftText(encrypted, -shift);
+    function presetPlayfair() {
+      document.getElementById("playText").value = "INSTRUMENTS";
+      document.getElementById("playKey").value = "MONARCHY";
+      runPlayfair();
+    }
+
+    function makePlayfairMatrix(key) {
+      const alpha = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+      const cleaned = (key.toUpperCase().replace(/[^A-Z]/g, "")).replace(/J/g, "I") + alpha;
+      let out = "";
+      for (const ch of cleaned) {
+        if (!out.includes(ch)) out += ch;
+      }
+      return out.slice(0, 25);
+    }
+
+    function formatPlayText(txt) {
+      let t = txt.toUpperCase().replace(/[^A-Z]/g, "").replace(/J/g, "I");
+      let r = "";
+      for (let i = 0; i < t.length; i++) {
+        const a = t[i];
+        const b = t[i + 1];
+        r += a;
+        if (b && a === b) r += "X";
+      }
+      if (r.length % 2 !== 0) r += "X";
+      return r;
+    }
+
+    function playfairProcess(text, matrix, enc) {
+      const shift = enc ? 1 : 4;
+      let res = "";
+      const steps = [];
+      for (let i = 0; i < text.length; i += 2) {
+        const a = text[i];
+        const b = text[i + 1];
+        const ia = matrix.indexOf(a);
+        const ib = matrix.indexOf(b);
+        const ra = Math.floor(ia / 5);
+        const ca = ia % 5;
+        const rb = Math.floor(ib / 5);
+        const cb = ib % 5;
+        let o1;
+        let o2;
+        let rule;
+        if (ra === rb) {
+          o1 = matrix[ra * 5 + ((ca + shift) % 5)];
+          o2 = matrix[rb * 5 + ((cb + shift) % 5)];
+          rule = "same row";
+        } else if (ca === cb) {
+          o1 = matrix[((ra + shift) % 5) * 5 + ca];
+          o2 = matrix[((rb + shift) % 5) * 5 + cb];
+          rule = "same column";
+        } else {
+          o1 = matrix[ra * 5 + cb];
+          o2 = matrix[rb * 5 + ca];
+          rule = "rectangle";
         }
+        res += o1 + o2;
+        steps.push({ in: a + b, out: o1 + o2, rule });
+      }
+      return { text: res, steps };
+    }
 
-        // --- 02. Monoalphabetic Cipher ---
-        function runMono() {
-            const text = document.getElementById('mono-input').value.toUpperCase();
-            const key = document.getElementById('mono-key').value.toUpperCase();
-            
-            if(key.length !== 26) { alert("Key must be 26 characters!"); return; }
+    function runPlayfair() {
+      const matrix = makePlayfairMatrix(document.getElementById("playKey").value);
+      const plain = document.getElementById("playText").value;
+      const fmt = formatPlayText(plain);
+      const enc = playfairProcess(fmt, matrix, true);
+      const dec = playfairProcess(enc.text, matrix, false);
 
-            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            
-            let encryptMap = {};
-            let decryptMap = {};
-            for(let i = 0; i < 26; i++) {
-                encryptMap[alphabet[i]] = key[i];
-                decryptMap[key[i]] = alphabet[i];
-            }
+      document.getElementById("playFmt").textContent = fmt;
+      document.getElementById("playEnc").textContent = enc.text;
+      document.getElementById("playDec").textContent = dec.text;
 
-            let encrypted = text.split('').map(c => encryptMap[c] || c).join('');
-            let decrypted = encrypted.split('').map(c => decryptMap[c] || c).join('');
+      let mat = "<tr>";
+      for (let c = 0; c < 5; c++) mat += `<th>C${c + 1}</th>`;
+      mat += "</tr>";
+      for (let r = 0; r < 5; r++) {
+        mat += "<tr>";
+        for (let c = 0; c < 5; c++) mat += `<td>${matrix[r * 5 + c]}</td>`;
+        mat += "</tr>";
+      }
+      document.getElementById("playMatrix").innerHTML = mat;
 
-            document.getElementById('mono-enc').innerText = encrypted;
-            document.getElementById('mono-dec').innerText = decrypted;
+      const stepRows = ["<tr><th>Input Digraph</th><th>Rule</th><th>Output Digraph</th></tr>"];
+      enc.steps.forEach(s => stepRows.push(`<tr><td>${s.in}</td><td>${s.rule}</td><td>${s.out}</td></tr>`));
+      document.getElementById("playSteps").innerHTML = stepRows.join("");
+      setLastRun("playfair", { key: document.getElementById("playKey").value, formatted: fmt, encrypted: enc.text, decrypted: dec.text, steps: enc.steps });
+    }
+
+    function presetHill() {
+      document.getElementById("hillText").value = "UNIVERSITY";
+      document.getElementById("h00").value = "3";
+      document.getElementById("h01").value = "3";
+      document.getElementById("h10").value = "2";
+      document.getElementById("h11").value = "5";
+      runHill();
+    }
+
+    function hillMul(m00, m01, m10, m11, v0, v1) {
+      return [mod(m00 * v0 + m01 * v1, 26), mod(m10 * v0 + m11 * v1, 26)];
+    }
+
+    function runHill() {
+      let text = document.getElementById("hillText").value.toUpperCase().replace(/[^A-Z]/g, "");
+      const k00 = parseInt(document.getElementById("h00").value, 10);
+      const k01 = parseInt(document.getElementById("h01").value, 10);
+      const k10 = parseInt(document.getElementById("h10").value, 10);
+      const k11 = parseInt(document.getElementById("h11").value, 10);
+      const det = mod(k00 * k11 - k01 * k10, 26);
+      const detInv = modInverse(det, 26);
+      const warn = document.getElementById("hillWarn");
+      if (detInv === -1) {
+        warn.textContent = `Invalid key: determinant ${det} has no inverse mod 26.`;
+        document.getElementById("hillResult").textContent = "";
+        document.getElementById("hillSteps").innerHTML = "";
+        return;
+      }
+      warn.textContent = "";
+      if (text.length % 2 !== 0) text += "X";
+
+      const inv00 = mod(k11 * detInv, 26);
+      const inv01 = mod(-k01 * detInv, 26);
+      const inv10 = mod(-k10 * detInv, 26);
+      const inv11 = mod(k00 * detInv, 26);
+
+      let enc = "";
+      const rows = ["<tr><th>Block</th><th>Vector</th><th>Encrypted</th><th>Decrypted</th></tr>"];
+      for (let i = 0; i < text.length; i += 2) {
+        const a = text.charCodeAt(i) - 65;
+        const b = text.charCodeAt(i + 1) - 65;
+        const e = hillMul(k00, k01, k10, k11, a, b);
+        enc += String.fromCharCode(e[0] + 65) + String.fromCharCode(e[1] + 65);
+      }
+
+      let dec = "";
+      for (let i = 0; i < enc.length; i += 2) {
+        const c0 = enc.charCodeAt(i) - 65;
+        const c1 = enc.charCodeAt(i + 1) - 65;
+        const d = hillMul(inv00, inv01, inv10, inv11, c0, c1);
+        const out = String.fromCharCode(d[0] + 65) + String.fromCharCode(d[1] + 65);
+        dec += out;
+        rows.push(`<tr><td>${i / 2 + 1}</td><td>[${c0},${c1}]</td><td>${enc.slice(i, i + 2)}</td><td>${out}</td></tr>`);
+      }
+
+      document.getElementById("hillResult").innerHTML = `
+        <div><strong>det(K):</strong> ${det}</div>
+        <div><strong>det(K)^-1 mod 26:</strong> ${detInv}</div>
+        <div><strong>K^-1:</strong> <span class="mono">[[${inv00}, ${inv01}], [${inv10}, ${inv11}]]</span></div>
+        <div><strong>Encrypted:</strong> <span class="mono">${enc}</span></div>
+        <div><strong>Decrypted:</strong> <span class="mono">${dec}</span></div>
+      `;
+      document.getElementById("hillSteps").innerHTML = rows.join("");
+      setLastRun("hill", { text, keyMatrix: [[k00, k01], [k10, k11]], determinant: det, inverseMatrix: [[inv00, inv01], [inv10, inv11]], encrypted: enc, decrypted: dec });
+    }
+
+    function presetDH() {
+      document.getElementById("dhP").value = "23";
+      document.getElementById("dhG").value = "5";
+      document.getElementById("dhA").value = "4";
+      document.getElementById("dhB").value = "7";
+      runDH();
+    }
+
+    function runDH() {
+      const p = parseInt(document.getElementById("dhP").value, 10);
+      const g = parseInt(document.getElementById("dhG").value, 10);
+      const a = parseInt(document.getElementById("dhA").value, 10);
+      const b = parseInt(document.getElementById("dhB").value, 10);
+
+      const A = powMod(g, a, p);
+      const B = powMod(g, b, p);
+      const sA = powMod(B, a, p);
+      const sB = powMod(A, b, p);
+
+      document.getElementById("dhFlow").innerHTML = `
+        <div class="flow-box"><strong>Alice</strong><br>private a=${a}<br>public A=g^a mod p = ${A}</div>
+        <div class="flow-box"><strong>Public Channel</strong><br>p=${p}, g=${g}<br>exchange A and B</div>
+        <div class="flow-box"><strong>Bob</strong><br>private b=${b}<br>public B=g^b mod p = ${B}</div>
+      `;
+
+      document.getElementById("dhResult").innerHTML = `
+        <div><strong>Alice secret:</strong> <span class="mono">B^a mod p = ${sA}</span></div>
+        <div><strong>Bob secret:</strong> <span class="mono">A^b mod p = ${sB}</span></div>
+        <div><strong>Status:</strong> ${sA === sB ? "match: secure shared secret established" : "mismatch"}</div>
+      `;
+      setLastRun("dh", { p, g, alicePrivate: a, bobPrivate: b, alicePublic: A, bobPublic: B, aliceSecret: sA, bobSecret: sB });
+    }
+
+    const BLOCK = 8;
+
+    function padPKCS7(data) {
+      const pad = BLOCK - (data.length % BLOCK || BLOCK);
+      return data + String.fromCharCode(pad).repeat(pad);
+    }
+
+    function unpadPKCS7(data) {
+      if (!data) return data;
+      const n = data.charCodeAt(data.length - 1);
+      if (n < 1 || n > BLOCK || n > data.length) return data;
+      return data.slice(0, data.length - n);
+    }
+
+    function xorStr(a, b) {
+      let out = "";
+      for (let i = 0; i < a.length; i++) out += String.fromCharCode(a.charCodeAt(i) ^ b.charCodeAt(i));
+      return out;
+    }
+
+    function ensureLen8(s) {
+      const v = s || "";
+      if (v.length >= BLOCK) return v.slice(0, BLOCK);
+      return (v + "00000000").slice(0, BLOCK);
+    }
+
+    function toHexBlocks(data) {
+      const out = [];
+      for (let i = 0; i < data.length; i += BLOCK) {
+        const blk = data.slice(i, i + BLOCK);
+        const hex = Array.from(blk).map(ch => ch.charCodeAt(0).toString(16).padStart(2, "0")).join(" ");
+        out.push(hex);
+      }
+      return out;
+    }
+
+    function encryptBlock(block, key) {
+      return xorStr(block, key);
+    }
+
+    function incCounter(counter) {
+      const bytes = counter.split("").map(ch => ch.charCodeAt(0));
+      for (let i = BLOCK - 1; i >= 0; i--) {
+        bytes[i] = (bytes[i] + 1) & 255;
+        if (bytes[i] !== 0) break;
+      }
+      return bytes.map(v => String.fromCharCode(v)).join("");
+    }
+
+    function presetBlock() {
+      document.getElementById("blkMode").value = "ECB";
+      document.getElementById("blkSeg").value = "8";
+      document.getElementById("blkText").value = "ADMINISTRATOR   ADMINISTRATOR";
+      document.getElementById("blkKey").value = "ABCDEFGH";
+      document.getElementById("blkIV").value = "12345678";
+      document.getElementById("blkCtr").value = "00000001";
+      runBlockMode();
+    }
+
+    function simulateBlockMode(mode, plain, key, iv, ctr0, seg) {
+      let cipher = "";
+      let dec = "";
+      const rows = ["<tr><th>Step</th><th>Input</th><th>Operation</th><th>Output (hex)</th></tr>"];
+
+      if (mode === "ECB") {
+        const padded = padPKCS7(plain);
+        for (let i = 0; i < padded.length; i += BLOCK) {
+          const b = padded.slice(i, i + BLOCK);
+          const c = encryptBlock(b, key);
+          cipher += c;
+          rows.push(`<tr><td>${i / BLOCK + 1}</td><td>${i / BLOCK + 1} block</td><td>cipher = block XOR key</td><td>${toHexBlocks(c)[0]}</td></tr>`);
         }
+        for (let i = 0; i < cipher.length; i += BLOCK) dec += encryptBlock(cipher.slice(i, i + BLOCK), key);
+        dec = unpadPKCS7(dec);
+      }
 
-        // --- 02B. Monoalphabetic Frequency Analysis Attack ---
-        function runFrequencyAnalysis() {
-            let cipherText = document.getElementById('mono-enc').innerText;
-            if(!cipherText) {
-                alert("Please generate some ciphertext first!");
-                return;
-            }
-
-            const ENGLISH_FREQ = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
-            
-            let freqArray = [];
-            for (let i = 0; i < 26; i++) {
-                freqArray.push({ char: String.fromCharCode(65 + i), count: 0 });
-            }
-
-            for (let i = 0; i < cipherText.length; i++) {
-                let char = cipherText[i];
-                if (char >= 'A' && char <= 'Z') {
-                    let index = char.charCodeAt(0) - 65;
-                    freqArray[index].count++;
-                }
-            }
-
-            freqArray.sort((a, b) => b.count - a.count);
-
-            let attackMap = {};
-            let displayMap = "";
-            for (let i = 0; i < 26; i++) {
-                attackMap[freqArray[i].char] = ENGLISH_FREQ[i];
-                if(freqArray[i].count > 0) {
-                    displayMap += `${freqArray[i].char}&rarr;${ENGLISH_FREQ[i]} (${freqArray[i].count}) | `;
-                }
-            }
-
-            let analysedText = "";
-            for (let i = 0; i < cipherText.length; i++) {
-                let char = cipherText[i];
-                if (char >= 'A' && char <= 'Z') {
-                    analysedText += attackMap[char];
-                } else {
-                    analysedText += char;
-                }
-            }
-
-            document.getElementById('mono-freq-map').innerHTML = displayMap.slice(0, -3); 
-            document.getElementById('mono-attack-text').innerText = analysedText;
-            document.getElementById('mono-attack-results').classList.remove('hidden');
+      if (mode === "CBC") {
+        const padded = padPKCS7(plain);
+        let prev = iv;
+        for (let i = 0; i < padded.length; i += BLOCK) {
+          const b = padded.slice(i, i + BLOCK);
+          const chained = xorStr(b, prev);
+          const c = encryptBlock(chained, key);
+          cipher += c;
+          rows.push(`<tr><td>${i / BLOCK + 1}</td><td>Pi XOR C(i-1)</td><td>encrypt with key</td><td>${toHexBlocks(c)[0]}</td></tr>`);
+          prev = c;
         }
-
-        // --- 03. RSA Algorithm ---
-        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
-        
-        function powerMod(base, exp, modulus) {
-            let res = 1;
-            base = base % modulus;
-            while (exp > 0) {
-                if (exp % 2 === 1) res = (res * base) % modulus;
-                base = (base * base) % modulus;
-                exp = Math.floor(exp / 2);
-            }
-            return res;
+        prev = iv;
+        for (let i = 0; i < cipher.length; i += BLOCK) {
+          const cb = cipher.slice(i, i + BLOCK);
+          const d = encryptBlock(cb, key);
+          dec += xorStr(d, prev);
+          prev = cb;
         }
+        dec = unpadPKCS7(dec);
+      }
 
-        function modInverse(e, phi) {
-            let m0 = phi, y = 0, x = 1;
-            if (phi === 1) return 0;
-            while (e > 1) {
-                let q = Math.floor(e / phi);
-                let t = phi;
-                phi = e % phi, e = t;
-                t = y;
-                y = x - q * y;
-                x = t;
-            }
-            if (x < 0) x += m0;
-            return x;
+      if (mode === "CFB") {
+        let reg = iv;
+        for (let i = 0; i < plain.length; i += seg) {
+          const part = plain.slice(i, i + seg);
+          const stream = encryptBlock(reg, key).slice(0, part.length);
+          const c = xorStr(part, stream);
+          cipher += c;
+          reg = reg.slice(part.length) + c;
+          rows.push(`<tr><td>${Math.floor(i / seg) + 1}</td><td>segment</td><td>XOR with encrypted register</td><td>${toHexBlocks(c)[0]}</td></tr>`);
         }
-
-        function isPrime(num) {
-            if(num <= 1) return false;
-            for(let i = 2; i <= Math.sqrt(num); i++) if(num % i === 0) return false;
-            return true;
+        reg = iv;
+        for (let i = 0; i < cipher.length; i += seg) {
+          const part = cipher.slice(i, i + seg);
+          const stream = encryptBlock(reg, key).slice(0, part.length);
+          const p = xorStr(part, stream);
+          dec += p;
+          reg = reg.slice(part.length) + part;
         }
+      }
 
-        function genRandPrime(min, max) {
-            let p;
-            do { p = Math.floor(Math.random() * (max - min + 1)) + min; } while (!isPrime(p));
-            return p;
+      if (mode === "OFB") {
+        let inb = iv;
+        for (let i = 0; i < plain.length; i += BLOCK) {
+          const part = plain.slice(i, i + BLOCK);
+          const stream = encryptBlock(inb, key);
+          const s = stream.slice(0, part.length);
+          const c = xorStr(part, s);
+          cipher += c;
+          inb = stream;
+          rows.push(`<tr><td>${i / BLOCK + 1}</td><td>segment</td><td>XOR with keystream block</td><td>${toHexBlocks(c)[0]}</td></tr>`);
         }
-
-        function runRSA() {
-            const msg = parseInt(document.getElementById('rsa-input').value);
-            
-            let p = genRandPrime(50, 150);
-            let q = genRandPrime(50, 150);
-            while(p === q) q = genRandPrime(50, 150);
-
-            let n = p * q;
-            let phi = (p - 1) * (q - 1);
-            
-            let e = 17; 
-            while(e < phi) {
-                if(gcd(e, phi) === 1) break;
-                e++;
-            }
-            
-            let d = modInverse(e, phi);
-
-            document.getElementById('rsa-p').innerText = p;
-            document.getElementById('rsa-q').innerText = q;
-            document.getElementById('rsa-pub').innerText = `(${e}, ${n})`;
-            document.getElementById('rsa-priv').innerText = `(${d}, ${n})`;
-
-            let c = powerMod(msg, e, n);
-            document.getElementById('rsa-enc').innerText = c;
-
-            let decrypted = powerMod(c, d, n);
-            document.getElementById('rsa-dec').innerText = `${decrypted} (char: ${String.fromCharCode(decrypted)})`;
+        inb = iv;
+        for (let i = 0; i < cipher.length; i += BLOCK) {
+          const part = cipher.slice(i, i + BLOCK);
+          const stream = encryptBlock(inb, key);
+          dec += xorStr(part, stream.slice(0, part.length));
+          inb = stream;
         }
+      }
 
-        // --- 04. Playfair Cipher ---
-        function runPlayfair() {
-            let key = document.getElementById('playfair-key').value.toUpperCase().replace(/[^A-Z]/g, '');
-            let text = document.getElementById('playfair-input').value.toUpperCase().replace(/[^A-Z]/g, '');
-            
-            let matrixStr = "";
-            let alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"; // No J
-            key = key.replace(/J/g, 'I');
-            
-            let combined = key + alphabet;
-            for(let char of combined) {
-                if(!matrixStr.includes(char)) {
-                    matrixStr += char;
-                }
-            }
-
-            let matrixHTML = "";
-            for(let i=0; i<25; i++) {
-                matrixHTML += matrixStr[i] + " ";
-                if((i+1) % 5 === 0) matrixHTML += "<br>";
-            }
-            document.getElementById('playfair-matrix').innerHTML = matrixHTML;
-
-            text = text.replace(/J/g, 'I');
-            let formatted = "";
-            for(let i=0; i<text.length; i++) {
-                formatted += text[i];
-                if(i + 1 < text.length && text[i] === text[i+1]) {
-                    formatted += 'X'; 
-                }
-            }
-            if(formatted.length % 2 !== 0) formatted += 'X'; 
-            
-            document.getElementById('playfair-fmt').innerText = formatted;
-
-            function processPlayfair(input, isEncrypt) {
-                let result = "";
-                let shift = isEncrypt ? 1 : 4; 
-                
-                for(let i=0; i<input.length; i+=2) {
-                    let a = input[i];
-                    let b = input[i+1];
-                    let idxA = matrixStr.indexOf(a);
-                    let idxB = matrixStr.indexOf(b);
-                    
-                    let rA = Math.floor(idxA / 5), cA = idxA % 5;
-                    let rB = Math.floor(idxB / 5), cB = idxB % 5;
-
-                    if(rA === rB) {
-                        result += matrixStr[rA * 5 + (cA + shift) % 5];
-                        result += matrixStr[rB * 5 + (cB + shift) % 5];
-                    } else if(cA === cB) {
-                        result += matrixStr[((rA + shift) % 5) * 5 + cA];
-                        result += matrixStr[((rB + shift) % 5) * 5 + cB];
-                    } else {
-                        result += matrixStr[rA * 5 + cB];
-                        result += matrixStr[rB * 5 + cA];
-                    }
-                }
-                return result;
-            }
-
-            let encrypted = processPlayfair(formatted, true);
-            document.getElementById('playfair-enc').innerText = encrypted;
-            document.getElementById('playfair-dec').innerText = processPlayfair(encrypted, false);
+      if (mode === "CTR") {
+        let ctr = ctr0;
+        for (let i = 0; i < plain.length; i += BLOCK) {
+          const part = plain.slice(i, i + BLOCK);
+          const stream = encryptBlock(ctr, key);
+          const c = xorStr(part, stream.slice(0, part.length));
+          cipher += c;
+          rows.push(`<tr><td>${i / BLOCK + 1}</td><td>counter ${i / BLOCK}</td><td>XOR with E(counter)</td><td>${toHexBlocks(c)[0]}</td></tr>`);
+          ctr = incCounter(ctr);
         }
-
-        // --- 05. Hill Cipher ---
-        function runHill() {
-            let text = document.getElementById('hill-input').value.toUpperCase().replace(/[^A-Z]/g, '');
-            let k00 = parseInt(document.getElementById('hill-k00').value);
-            let k01 = parseInt(document.getElementById('hill-k01').value);
-            let k10 = parseInt(document.getElementById('hill-k10').value);
-            let k11 = parseInt(document.getElementById('hill-k11').value);
-            let errorDiv = document.getElementById('hill-error');
-            let stepsContainer = document.getElementById('hill-steps-container');
-
-            let det = mod((k00 * k11 - k01 * k10), 26);
-            document.getElementById('hill-det').innerText = det;
-
-            let detInv = -1;
-            for(let x=1; x<26; x++) {
-                if(mod(det * x, 26) === 1) { detInv = x; break; }
-            }
-
-            if(detInv === -1) {
-                errorDiv.innerText = `Error: Matrix is not invertible mod 26. Determinant is ${det}, which shares a common factor with 26. Try a different key.`;
-                errorDiv.style.display = 'block';
-                stepsContainer.classList.add('hidden');
-                return;
-            } else {
-                errorDiv.style.display = 'none';
-                stepsContainer.classList.remove('hidden');
-            }
-
-            let inv00 = mod(k11 * detInv, 26);
-            let inv01 = mod(-k01 * detInv, 26);
-            let inv10 = mod(-k10 * detInv, 26);
-            let inv11 = mod(k00 * detInv, 26);
-
-            document.getElementById('hill-inv').innerText = `[[${inv00}, ${inv01}], [${inv10}, ${inv11}]]`;
-
-            if(text.length % 2 !== 0) text += 'X';
-
-            function multiplyMatrixWithSteps(input, m00, m01, m10, m11, stepsElementId) {
-                let result = "";
-                let stepsHTML = "";
-                
-                for(let i=0; i<input.length; i+=2) {
-                    let char0 = input[i];
-                    let char1 = input[i+1];
-                    let v0 = input.charCodeAt(i) - 65;
-                    let v1 = input.charCodeAt(i+1) - 65;
-
-                    let raw0 = (m00 * v0 + m10 * v1); 
-                    let raw1 = (m01 * v0 + m11 * v1);
-                    
-                    let c0 = mod(raw0, 26);
-                    let c1 = mod(raw1, 26);
-
-                    let outChar0 = String.fromCharCode(c0 + 65);
-                    let outChar1 = String.fromCharCode(c1 + 65);
-
-                    stepsHTML += `
-                        <div class="border-l-2 border-green-600 pl-2">
-                            <span class="text-gray-400">Block: [${char0}(${v0}), ${char1}(${v1})]</span><br>
-                            Top: (${m00}*${v0}) + (${m10}*${v1}) = ${raw0} &equiv; <strong class="text-white">${c0} (${outChar0})</strong><br>
-                            Bot: (${m01}*${v0}) + (${m11}*${v1}) = ${raw1} &equiv; <strong class="text-white">${c1} (${outChar1})</strong><br>
-                            <span class="text-purple-300">Result: ${outChar0}${outChar1}</span>
-                        </div>
-                    `;
-
-                    result += outChar0 + outChar1;
-                }
-                
-                document.getElementById(stepsElementId).innerHTML = stepsHTML;
-                return result;
-            }
-
-            let encrypted = multiplyMatrixWithSteps(text, k00, k01, k10, k11, 'hill-enc-steps');
-            document.getElementById('hill-enc').innerText = encrypted;
-            
-            let decrypted = multiplyMatrixWithSteps(encrypted, inv00, inv01, inv10, inv11, 'hill-dec-steps');
-            document.getElementById('hill-dec').innerText = decrypted;
+        ctr = ctr0;
+        for (let i = 0; i < cipher.length; i += BLOCK) {
+          const part = cipher.slice(i, i + BLOCK);
+          const stream = encryptBlock(ctr, key);
+          dec += xorStr(part, stream.slice(0, part.length));
+          ctr = incCounter(ctr);
         }
+      }
 
-        window.onload = () => {
-            runCaesar();
-            runMono();
-            runRSA();
-            runPlayfair();
-            runHill();
-        };
-    </script>
+      return { mode, cipher, decrypted: dec, rows };
+    }
+
+    function runBlockMode() {
+      const mode = document.getElementById("blkMode").value;
+      const seg = Math.max(1, Math.min(8, parseInt(document.getElementById("blkSeg").value || "8", 10)));
+      const plain = document.getElementById("blkText").value;
+      const key = ensureLen8(document.getElementById("blkKey").value);
+      const iv = ensureLen8(document.getElementById("blkIV").value);
+      const ctr0 = ensureLen8(document.getElementById("blkCtr").value);
+
+      const result = simulateBlockMode(mode, plain, key, iv, ctr0, seg);
+
+      document.getElementById("blkResult").innerHTML = `
+        <div><strong>Mode:</strong> ${mode}</div>
+        <div><strong>Cipher (hex blocks):</strong> <span class="mono">${toHexBlocks(result.cipher).join(" | ")}</span></div>
+        <div><strong>Recovered text:</strong> <span class="mono">${result.decrypted}</span></div>
+      `;
+      document.getElementById("blkTable").innerHTML = result.rows.join("");
+      setLastRun("block", { mode, plaintext: plain, key, iv, counter: ctr0, segmentBytes: seg, cipherHexBlocks: toHexBlocks(result.cipher), recoveredText: result.decrypted });
+    }
+
+    function compareAllModes() {
+      const seg = Math.max(1, Math.min(8, parseInt(document.getElementById("blkSeg").value || "8", 10)));
+      const plain = document.getElementById("blkText").value;
+      const key = ensureLen8(document.getElementById("blkKey").value);
+      const iv = ensureLen8(document.getElementById("blkIV").value);
+      const ctr0 = ensureLen8(document.getElementById("blkCtr").value);
+      const modes = ["ECB", "CBC", "CFB", "OFB", "CTR"];
+
+      const rows = ["<tr><th>Mode</th><th>Cipher (hex blocks)</th><th>Recovered text</th></tr>"];
+      const comparison = [];
+
+      modes.forEach(mode => {
+        const result = simulateBlockMode(mode, plain, key, iv, ctr0, seg);
+        const hex = toHexBlocks(result.cipher).join(" | ");
+        rows.push(`<tr><td>${mode}</td><td class="mono">${hex}</td><td class="mono">${result.decrypted}</td></tr>`);
+        comparison.push({ mode, cipherHexBlocks: toHexBlocks(result.cipher), recoveredText: result.decrypted });
+      });
+
+      document.getElementById("blkCompareTable").innerHTML = rows.join("");
+      setLastRun("block", { compareAllModes: true, plaintext: plain, key, iv, counter: ctr0, segmentBytes: seg, results: comparison });
+    }
+
+    function presetECDH() {
+      document.getElementById("eccP").value = "17";
+      document.getElementById("eccA").value = "2";
+      document.getElementById("eccB").value = "2";
+      document.getElementById("eccGx").value = "5";
+      document.getElementById("eccGy").value = "1";
+      document.getElementById("eccAlice").value = "3";
+      document.getElementById("eccBob").value = "3";
+      runECDH();
+    }
+
+    function invModPrime(n, p) {
+      return powMod(mod(n, p), p - 2, p);
+    }
+
+    function addPoint(P, Q, a, p) {
+      if (P.inf) return Q;
+      if (Q.inf) return P;
+
+      if (P.x === Q.x && mod(P.y + Q.y, p) === 0) return { inf: true };
+
+      let lambda;
+      if (P.x === Q.x && P.y === Q.y) {
+        if (P.y === 0) return { inf: true };
+        const num = mod(3 * P.x * P.x + a, p);
+        const den = invModPrime(mod(2 * P.y, p), p);
+        lambda = mod(num * den, p);
+      } else {
+        const num = mod(Q.y - P.y, p);
+        const den = invModPrime(mod(Q.x - P.x, p), p);
+        lambda = mod(num * den, p);
+      }
+
+      const x3 = mod(lambda * lambda - P.x - Q.x, p);
+      const y3 = mod(lambda * (P.x - x3) - P.y, p);
+      return { x: x3, y: y3, inf: false };
+    }
+
+    function mulPoint(k, P, a, p) {
+      let R = { inf: true };
+      let Q = { ...P };
+      while (k > 0) {
+        if (k % 2 === 1) R = addPoint(R, Q, a, p);
+        Q = addPoint(Q, Q, a, p);
+        k = Math.floor(k / 2);
+      }
+      return R;
+    }
+
+    function pointToString(P) {
+      return P.inf ? "Infinity" : `(${P.x}, ${P.y})`;
+    }
+
+    function runECDH() {
+      const p = parseInt(document.getElementById("eccP").value, 10);
+      const a = parseInt(document.getElementById("eccA").value, 10);
+      const b = parseInt(document.getElementById("eccB").value, 10);
+      const G = {
+        x: parseInt(document.getElementById("eccGx").value, 10),
+        y: parseInt(document.getElementById("eccGy").value, 10),
+        inf: false
+      };
+      const alice = parseInt(document.getElementById("eccAlice").value, 10);
+      const bob = parseInt(document.getElementById("eccBob").value, 10);
+
+      const left = mod(G.y * G.y, p);
+      const right = mod(G.x * G.x * G.x + a * G.x + b, p);
+      if (left !== right) {
+        document.getElementById("eccResult").innerHTML = "<span class='warning'>G is not on the selected curve.</span>";
+        document.getElementById("eccFlow").innerHTML = "";
+        return;
+      }
+
+      const A = mulPoint(alice, G, a, p);
+      const B = mulPoint(bob, G, a, p);
+      const sA = mulPoint(alice, B, a, p);
+      const sB = mulPoint(bob, A, a, p);
+
+      document.getElementById("eccFlow").innerHTML = `
+        <div class="flow-box"><strong>Alice</strong><br>priv=${alice}<br>pub=${pointToString(A)}</div>
+        <div class="flow-box"><strong>Curve</strong><br>y^2=x^3+${a}x+${b} mod ${p}<br>G=${pointToString(G)}</div>
+        <div class="flow-box"><strong>Bob</strong><br>priv=${bob}<br>pub=${pointToString(B)}</div>
+      `;
+
+      const match = (!sA.inf && !sB.inf && sA.x === sB.x && sA.y === sB.y);
+      document.getElementById("eccResult").innerHTML = `
+        <div><strong>Alice shared point:</strong> <span class="mono">${pointToString(sA)}</span></div>
+        <div><strong>Bob shared point:</strong> <span class="mono">${pointToString(sB)}</span></div>
+        <div><strong>Status:</strong> ${match ? "match: same shared secret point" : "mismatch"}</div>
+        <div class="small-note">In practical systems, the x-coordinate is usually passed through a KDF/hash to derive a symmetric key.</div>
+      `;
+      setLastRun("ecc", { p, a, b, basePoint: G, alicePrivate: alice, bobPrivate: bob, alicePublic: A, bobPublic: B, aliceShared: sA, bobShared: sB, match });
+    }
+
+    makeNav();
+    presetCaesar();
+    presetMono();
+    presetRSA();
+    presetPlayfair();
+    presetHill();
+    presetDH();
+    presetBlock();
+    presetECDH();
+    window.addEventListener("load", () => {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
 </body>
 </html>
+    
