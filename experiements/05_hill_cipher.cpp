@@ -108,7 +108,11 @@ vector<vector<int>> inverse(vector<vector<int>> keyMatrix) {
 
     int det = determinant(keyMatrix, n);
 
+    cout << "Det: " << det << endl;
+
     int detInverse = modInv(det, 26);
+
+    cout << "Inv det: " << detInverse << endl;
 
     if(detInverse == -1) {
         cout << "Matrix has no inverse modulo 26! invalid key," << endl;
@@ -117,10 +121,26 @@ vector<vector<int>> inverse(vector<vector<int>> keyMatrix) {
     vector<vector<int>> adj(n, vector<int>(n));
     adjoint(keyMatrix, adj);
 
+
+    cout << "ADJ: \n";
+    for(auto i : adj) {
+        for(int j : i)
+            cout << j << " ";
+        cout << endl;
+    }
+
     for(int i = 0; i < n; i++) {
         for(int j = 0; j < n; j++) {
             inverseMatrix[i][j] = ((adj[i][j] * detInverse) % 26 + 26) % 26;
         }
+    }
+
+
+
+    for(auto i : inverseMatrix) {
+        for(int j : i)
+            cout << j << " ";
+        cout << endl;
     }
 
     return inverseMatrix;
@@ -149,7 +169,8 @@ string decrypt(string text, vector<vector<int>> keyMatrix) {
 
 int32_t main() {
     vector<vector<int>> keyMatrix = {{3, 3}, {2, 5}};
-    string text = "HELP";
+    string text = "UNIVERSITY";
+    // string text = "HELP";
 
     cout << "Original Text: " << text << endl;
     cout << "Matrix:" << endl;

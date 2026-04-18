@@ -53,6 +53,7 @@ string formatText(string text) {
             formatted.insert(i + 1, 1, 'X');
         }
     }
+    cout << formatted << endl;
     return formatted;
 }
 
