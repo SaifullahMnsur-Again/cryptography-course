@@ -31,15 +31,6 @@ string xor_block_op(string block, string key) {
     return xor_block;
 }
 
-// string decryptEcbBlock(string block, string key) {
-//     string decipher_block = "";
-//     for(int i = 0; i < BLOCK_SIZE; i++) {
-//         decipher_block += (block[i] ^ key[i]);
-//     }
-
-//     return decipher_block;
-// }
-
 string encryptECB(string plaintext, string key) {
     plaintext = pad(plaintext);
 
