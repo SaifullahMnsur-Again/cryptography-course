@@ -51,7 +51,7 @@ int main() {
     if(alice_shared_secret == bob_shared_secret) {
         cout << "Success! Both parites have securely agreed on the same shared secret key: " << alice_shared_secret << endl;
     } else {
-        cout << "Error: the secret key do not match!" << endl;
+        cout << "Error: the secret keys do not match!" << endl;
     }
 
 
