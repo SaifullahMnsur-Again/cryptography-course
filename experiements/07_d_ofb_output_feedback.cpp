@@ -25,20 +25,20 @@ string processOFB(string input_text, string key, string nonce) {
     for(int i = 0; i < input_text.length(); i += BLOCK_SIZE) {
 
         int u_bytes = min(BLOCK_SIZE, (int)input_text.length() - i);
-        string plaintext_block = input_text.substr(i, u_bytes);
+        string curr_segment = input_text.substr(i, u_bytes);
 
-        string O_j= encryptSingleBlock(curr_input, key);
+        string key_stream = encryptSingleBlock(curr_input, key);
 
-        string msb_u = O_j.substr(0, u_bytes);
+        string msb_u = key_stream.substr(0, u_bytes);
 
         string result_block = "";
         for(int j = 0; j < u_bytes; j++) {
-            result_block += (plaintext_block[j] ^ msb_u[j]);
+            result_block += (curr_segment[j] ^ msb_u[j]);
         }
 
         output_text += result_block;
 
-        curr_input = O_j;
+        curr_input = key_stream;
     }
     return output_text;
 }
