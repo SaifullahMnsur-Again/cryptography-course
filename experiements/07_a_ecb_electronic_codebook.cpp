@@ -74,7 +74,9 @@ int main() {
     string ciphertext = encryptECB(plaintext, key);
     cout << "Cipher Text: " << ciphertext << endl << endl;
 
+    cout << "Cipher Text (hex): ";
     printHex(ciphertext);
+    cout << endl;
 
     string deciphertext = decryptECB(ciphertext, key);
     cout << "Decipher Text: " << deciphertext << endl << endl;
