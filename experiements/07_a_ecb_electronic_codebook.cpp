@@ -74,7 +74,7 @@ void printHex(string data) {
 int main() {
     cout << "--- ECB Mode Operation ---" << endl << endl;
 
-    string plaintext = "12345678";
+    string plaintext = "HELLO WORLD!";
     string key = "ABCDEFGH"; // block size 8 byte = 64 bit
 
     cout << "Plaintext: " << plaintext << endl;
