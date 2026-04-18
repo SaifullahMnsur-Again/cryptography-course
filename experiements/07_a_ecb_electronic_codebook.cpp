@@ -23,22 +23,22 @@ string unpad(string data) {
     return data.substr(0, data.length() - pad_len);
 }
 
-string encryptEcbBlock(string block, string key) {
-    string cipher_block = "";
+string xor_block_op(string block, string key) {
+    string xor_block = "";
     for(int i = 0; i < BLOCK_SIZE; i++) {
-        cipher_block += (block[i] ^ key[i]);
+        xor_block += (block[i] ^ key[i]);
     }
-    return cipher_block;
+    return xor_block;
 }
 
-string decryptEcbBlock(string block, string key) {
-    string decipher_block = "";
-    for(int i = 0; i < BLOCK_SIZE; i++) {
-        decipher_block += (block[i] ^ key[i]);
-    }
+// string decryptEcbBlock(string block, string key) {
+//     string decipher_block = "";
+//     for(int i = 0; i < BLOCK_SIZE; i++) {
+//         decipher_block += (block[i] ^ key[i]);
+//     }
 
-    return decipher_block;
-}
+//     return decipher_block;
+// }
 
 string encryptECB(string plaintext, string key) {
     plaintext = pad(plaintext);
@@ -46,7 +46,7 @@ string encryptECB(string plaintext, string key) {
     string ciphertext = "";
     for(int i = 0; i < plaintext.length(); i += BLOCK_SIZE) {
         string block = plaintext.substr(i, BLOCK_SIZE);
-        ciphertext += encryptEcbBlock(block, key);
+        ciphertext += xor_block_op(block, key);
     }
     return ciphertext;
 }
@@ -56,7 +56,7 @@ string decryptECB(string ciphertext, string key) {
 
     for(int i = 0; i < ciphertext.length(); i += BLOCK_SIZE) {
         string block = ciphertext.substr(i, BLOCK_SIZE);
-        deciphertext += decryptEcbBlock(block, key);
+        deciphertext += xor_block_op(block, key);
     }
 
     return unpad(deciphertext);
