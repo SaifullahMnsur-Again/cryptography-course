@@ -2,18 +2,21 @@
 
 using namespace std;
 
-long long power(long long base, long long exp, long long mod) {
-    long long result = 1LL;
-    base = base%mod;
+long long mod(long long n, long long p) {
+    return (n % p + p) % p;
+}
+
+long long power(long long base, long long exp, long long p) {
+    long long res = 1LL;
+    base = mod(base, p);
 
     while(exp > 0) {
-        if(exp % 2 == 1) {
-            result = (result * base) % mod;
-        }
+        if(exp % 2 == 1)
+            res = mod(res * base, p);
         exp = exp / 2;
-        base = (base * base) % mod;
+        base = mod(base * base, p);
     }
-    return result;
+    return res;
 }
 
 int main() {
