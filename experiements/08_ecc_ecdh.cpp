@@ -79,7 +79,7 @@ Point multiplyPoint(long long k, Point P, long long a, long long p) {
 int main() {
     cout << "--- Experiment 08: Elliptic Curve Key Exchange ---" << endl << endl;
 
-    long long p = 17;
+    long long p = 7919;
     long long a = 2;
     long long b = 2;
 
@@ -112,5 +112,23 @@ int main() {
         cout << "Error: the secret keys do not match!" << endl;
     }
 
-    
+    Point Pm = {123, 456};
+
+    cout << "Plain Text: (" << Pm.x << ", " << Pm.y << ")" << endl;
+
+    long long k = 50;
+
+    Point C1 = multiplyPoint(k, G, a, p);
+
+    Point mask = multiplyPoint(k, bob_public_key, a, p);
+
+    Point C2 = addPoint(Pm, mask, a, p);
+
+    cout << "Point sent to Bob: ( (" << C1.x << "," << C1.y << "), (" << C2.x << "," << C2.y << ") )" << endl;
+
+    Point C1p = multiplyPoint(bob_private_key, C1, a, p);
+
+    Point dPm = addPoint(C2, {C1p.x, mod(-C1p.y, p)}, a, p);
+
+    cout << "Decrypted Text: (" << dPm.x << ", " << dPm.y << ")" << endl;
 }
