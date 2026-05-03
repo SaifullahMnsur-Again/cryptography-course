@@ -112,22 +112,30 @@ int main() {
         cout << "Error: the secret keys do not match!" << endl;
     }
 
+    // Plain Text
     Point Pm = {123, 456};
 
     cout << "Plain Text: (" << Pm.x << ", " << Pm.y << ")" << endl;
 
+    // random integer
     long long k = 50;
 
+    // Alice sends {C1, C2}
+
+    // C1 = kG
     Point C1 = multiplyPoint(k, G, a, p);
 
+    // mask = kPb
     Point mask = multiplyPoint(k, bob_public_key, a, p);
-
+    // C2 = Pm + KPb
     Point C2 = addPoint(Pm, mask, a, p);
 
     cout << "Point sent to Bob: ( (" << C1.x << "," << C1.y << "), (" << C2.x << "," << C2.y << ") )" << endl;
 
+    // C1p = nb(C1) = nb(kG)
     Point C1p = multiplyPoint(bob_private_key, C1, a, p);
 
+    // Pm = C2 - nb(C1) = Pm + kPb - nbKg = Pm + nbKg - nbKg
     Point dPm = addPoint(C2, {C1p.x, mod(-C1p.y, p)}, a, p);
 
     cout << "Decrypted Text: (" << dPm.x << ", " << dPm.y << ")" << endl;
